@@ -1,0 +1,11 @@
+streamlit
+pandas
+numpy
+folium
+streamlit_folium
+streamlit_option_menu
+plotly.express
+cufflinks
+seaborn
+missingno
+altair
