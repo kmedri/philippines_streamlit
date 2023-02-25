@@ -10,3 +10,4 @@ seaborn
 missingno
 altair
 scikit-learn
+geopandas
