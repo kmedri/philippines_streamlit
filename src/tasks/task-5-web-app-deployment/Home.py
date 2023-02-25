@@ -1,15 +1,17 @@
 import streamlit as st
 import pandas as pd
+import geopandas as gpd
 import os
 import pickle as pkl
 import folium as flm
+from folium.plugins import HeatMap, MarkerCluster, Search, Fullscreen
 from streamlit_folium import st_folium
 
 APP_TITLE = 'Mapping Urban Vulnerability areas'
 st.set_page_config(page_title='Home', layout='wide')
+print('hello')
 
-
-# Load the DATA and cache.
+# Load the Model DATA and cache.
 @st.cache_data
 def get_data():
     """
@@ -24,25 +26,28 @@ def get_data():
     for file in files:
         df_name = os.path.splitext(file)[0]
         df = pd.read_csv(os.path.join(data_folder, file))
-        df = df.iloc[:, :-2]  # remove last column
+        df = df.iloc[:, :-2]  # remove last column.
         dfs[df_name] = df.set_index(df.columns[0])
     return dfs
 
 
-# @st.cache_data
-# def get_data(url):
-#     df2 = pd.read_csv(url)
-#     return df2
+# Load the Map DATA and cache.
+@st.cache_data
+def get_map_data(url):
+    # gdf = gpd.read_parquet(url)
+    df1 = pd.read_parquet(url)
+    df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column.
+    return df1
 
 
-# Create the landing page
+# Create the landing page.
 def main():
     # Base Colors:
     # Blue = #182D40
     # Light Blue = #82a6c0
     # Green = #4abd82
 
-    # Add custom CSS
+    # Add custom CSS.
     st.markdown(
         """
         <style>
@@ -152,15 +157,15 @@ def main():
         </div>
         """
         st.markdown(html_temp, unsafe_allow_html=True)
-        Disaster, Economy, Health, Industry, Poverty = 'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl', 'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl', 'src/tasks/task-5-web-app-deployment/pckls/health.pkl', 'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl', 'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl'
+        Disaster, vulnomy, Health, Industry, Poverty = 'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl', 'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl', 'src/tasks/task-5-web-app-deployment/pckls/health.pkl', 'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl', 'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl'
 
-        models = {'Disaster': Disaster, 'Economy': Economy,
+        models = {'Disaster': Disaster, 'vulnomy': vulnomy,
         'Health': Health, 'Industry': Industry, 'Poverty': Poverty}
 
         model_names = models.keys()
 
         option = st.selectbox(
-            'Please Select the Pillar', options=model_names,
+            'Please Selvut the Pillar', options=model_names,
             help='Here are 5 pillars that can influence the vulnerability of a City')
 
         with open(models[option], 'rb') as file:
@@ -169,14 +174,14 @@ def main():
 
         def load_df():
             """
-            Select correct data frame from options drop down.
+            Loads the correct data frame the options drop down.
 
             Returns:
                 pd.Dataframe: Returns relevant data frame.
             """
             if option == 'Disaster':
                 return df_disaster
-            elif option == 'Economy':
+            elif option == 'Vulnerability':
                 return df_dweg
             elif option == 'Health':
                 return df_health
@@ -251,24 +256,39 @@ def main():
             st.markdown(result, unsafe_allow_html=True)
 
 
+    map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
+    df1 = get_map_data(map_url)
+
+    noah_urls = {
+        'AlluvialFan': 'src/tasks/task-5-web-app-deployment/data/noah/AlluvialFan-projected.parquet',
+        'DebrisFlow': 'src/tasks/task-5-web-app-deployment/data/noah/DebrisFlow-projected.parquet',
+        'Flood-5yr': 'src/tasks/task-5-web-app-deployment/data/noah/flood-5yr-projected.parquet',
+        'StormSurgeAdvisory1': 'src/tasks/task-5-web-app-deployment/data/noah/StormSurgeAdvisory1-projected.parquet'}
+
+    colors = {
+        'AlluvialFan': 'green',
+        'DebrisFlow': 'blue',
+        'Flood-5yr': 'orange',
+        'StormSurgeAdvisory1': 'red'}
+
     # Add map.
     def map_ph(data, name):
-        cond = data[data['province'] == name]
+        cond = data['Province'] == name
 
-        lat = data[cond]['latitude'].tolist()
-        lon = data[cond]['longitude'].tolist()
-        nam = data[cond]['city_municipality'].tolist()
-        eco = data[cond]['economic_dynamism'].tolist()
-        gov = data[cond]['government_efficiency'].tolist()
-        inf = data[cond]['infrastructure'].tolist()
-        res = data[cond]['resiliency'].tolist()
+        lat = data[cond]['Latitude'].tolist()
+        lon = data[cond]['Longitude'].tolist()
+        nam = data[cond]['City'].tolist()
+        vul = data[cond]['Vulnerability'].tolist()
+        pop = data[cond]['Population'].tolist()
+        pov = data[cond]['Poverty_Incidents'].tolist()
+        hop = data[cond]['Hospital'].tolist()
 
-        html = '''<h4>Needs Assessment Information</h4>
-        <b>Name: %s</b> <br /><br />
-        <b>economic_dynamism: </b> %s <br />
-        <b>government_efficiency: </b> %s <br />
-        <b>infrastructure: </b> %s <br />
-        <b>resiliency: </b> %s <br />
+        html = '''<h4>Vulnerability Info</h4>
+        <b>City/Town:<br /> %s</b> <br /><br />
+        <b>Vulnerability: </b> %s <br />
+        <b>Population: </b> %s <br />
+        <b>Poverty_Incidents: </b> %s <br />
+        <b>Hospital: </b> %s <br />
         '''
 
         if lat and lon:
@@ -278,45 +298,38 @@ def main():
 
         fg = flm.FeatureGroup(name='Philippines Map')
 
-        for lt, ln, nm, ec, go, nf, re in zip((lat), (lon), (nam), (eco), (gov), (inf), (res)):
-            sum_values = ec + go + nf + re
+        marker_props = {'low': {'color': 'green', 'size': 10},
+                    'medium': {'color': 'blue', 'size': 10},
+                    'high': {'color': 'red', 'size': 15}}
 
-            def marker_size(sums):
-                marker_sized = 0
-                if sums > 0:
-                    marker_sized = (10 - sums) + 10
-                marker_sized = marker_sized * map.zoom_start / 12
-                return int(marker_sized)
-
-            def marker_color(sums):
-                norm = colors.Normalize(vmin=0, vmax=10)
-                cmap = cm.get_cmap('YlOrRd')
-                marker_colored = cmap(norm(sums))
-                return marker_colored
-
-            iframe = flm.IFrame(html = html % ((nm), (ec), (go), (nf), (re)), height = 165)
+        for lt, ln, nm, vu, po, pv, ho in zip((lat), (lon), (nam), (vul), (pop), (pov), (hop)):
+            iframe = flm.IFrame(html = html % ((nm), (vu), (po), (pv), (ho)), height = 210)
             popup = flm.Popup(iframe, min_width=200, max_width=500)
-            marker = flm.CircleMarker(location = [lt, ln], popup = (popup), fill_color=marker_color(sum_values), color='None', radius=marker_size(sum_values, map.zoom_level), fill_opacity = 0.7)
-            marker.add_child(flm.Popup(html = html % ((nm), (ec), (go), (nf), (re)), min_width=200, max_width=500))
-            fg.add_child(flm.CircleMarker(location = [lt, ln], popup = (popup), fill_color=marker_color(sum_values), color='None', radius=marker_size(sum_values), fill_opacity = 0.7))
+            props = marker_props[vu]
+            marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.7)
+            fg.add_child(marker)
             map.add_child(fg)
-            print(sum_values)
-            print(marker_size(sum_values))
+            # print(len(vul))
+            # print(marker_sized)
         # map.save('map.html')
-        return map
+        st_map = st_folium(map, width=1600)
+        return st_map
+    
+    
+    with st.container():
+        map_ph(df1, 'Palawan')
 
-    map_ph(df2, 'philippines')
     
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('Sub Header Left')
         st.write('Column One')
-        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
 
     with col2:
         st.subheader('Sub Header Right')
         st.write('Column Two')
-        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
 
 if __name__ == "__main__":
     main()
