@@ -4,7 +4,6 @@ import geopandas as gpd
 import os
 import pickle as pkl
 import folium as flm
-from folium.plugins import HeatMap, MarkerCluster, Search, Fullscreen
 from streamlit_folium import st_folium
 
 APP_TITLE = 'Mapping Urban Vulnerability areas'
@@ -13,20 +12,19 @@ print('hello')
 
 # Load the Model DATA and cache.
 @st.cache_data
-def get_data():
+def get_data(folder):
     """
     Load the data in a function so we can cache the files.
 
     Returns:
         pd.Dataframe: Returns a data frame.
     """
-    data_folder = "src/tasks/task-5-web-app-deployment/data/model"
-    files = [f for f in os.listdir(data_folder) if f.endswith(".csv")]
+    data_folder = folder
+    files = [f for f in os.listdir(data_folder) if f.endswith('.csv')]
     dfs = {}
     for file in files:
         df_name = os.path.splitext(file)[0]
         df = pd.read_csv(os.path.join(data_folder, file))
-        df = df.iloc[:, :-2]  # remove last column.
         dfs[df_name] = df.set_index(df.columns[0])
     return dfs
 
@@ -39,6 +37,25 @@ def get_map_data(url):
     df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column.
     return df1
 
+
+# Load the Noah DATA and cache.
+@st.cache_data
+def get_data_noah(folder):
+    """
+    Load the data in a function so we can cache the files.
+
+    Returns:
+        pd.Dataframe: Returns a data frame.
+    """
+    data_folder = folder
+    files = [f for f in os.listdir(data_folder) if f.endswith('.parquet')]
+    gdfs = {}
+    for file in files:
+        gdf_name = os.path.splitext(file)[0]
+        gdf = gpd.read_parquet(os.path.join(data_folder, file))
+        gdfs[gdf_name] = gdf.set_index(gdf.columns[0])
+    return gdfs
+    
 
 # Create the landing page.
 def main():
@@ -92,7 +109,6 @@ def main():
         }
         .css-12w0qpk.e1tzin5v2 {
         background: #d2d2d2;
-        border-radius: 8px;
         padding: 5px 10px;
         }
         label.css-18ewatb.e16fv1kl2 {
@@ -136,17 +152,17 @@ def main():
         """, unsafe_allow_html=True
     )
 
-    st.image('src/tasks/task-5-web-app-deployment/assets/header.png')
+    # st.image('src/tasks/task-5-web-app-deployment/assets/header.png')
     st.title(APP_TITLE)
     st.write('**Under Construction** - Please be aware we are currently building this app, so it will change over the next few weeks. Thank you for your patience.')
 
     # Load data and create data frames for the Model
-    data = get_data()
-    df_disaster = data["disaster"]
-    df_dweg = data["dweg"]
-    df_health = data["health"]
-    df_industry = data["industry_II"]
-    df_poverty = data["poverty"]
+    data = get_data('src/tasks/task-5-web-app-deployment/data/model')
+    df_disaster = data['disaster'].iloc[: , :-2]
+    df_dweg = data['dweg'].iloc[: , :-2]
+    df_health = data['health'].iloc[: , :-2]
+    df_industry = data['industry_II'].iloc[: , :-2]
+    df_poverty = data['poverty'].iloc[: , :-2]
 
     # Create the sidebar and add Model
     with st.sidebar:
@@ -157,15 +173,15 @@ def main():
         </div>
         """
         st.markdown(html_temp, unsafe_allow_html=True)
-        Disaster, vulnomy, Health, Industry, Poverty = 'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl', 'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl', 'src/tasks/task-5-web-app-deployment/pckls/health.pkl', 'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl', 'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl'
+        Disaster, Eclnomy, Health, Industry, Poverty = 'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl', 'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl', 'src/tasks/task-5-web-app-deployment/pckls/health.pkl', 'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl', 'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl'
 
-        models = {'Disaster': Disaster, 'vulnomy': vulnomy,
+        models = {'Disaster': Disaster, 'Eclnomy': Eclnomy,
         'Health': Health, 'Industry': Industry, 'Poverty': Poverty}
 
         model_names = models.keys()
 
         option = st.selectbox(
-            'Please Selvut the Pillar', options=model_names,
+            'Please Select the Pillar', options=model_names,
             help='Here are 5 pillars that can influence the vulnerability of a City')
 
         with open(models[option], 'rb') as file:
@@ -259,17 +275,13 @@ def main():
     map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
     df1 = get_map_data(map_url)
 
-    noah_urls = {
-        'AlluvialFan': 'src/tasks/task-5-web-app-deployment/data/noah/AlluvialFan-projected.parquet',
-        'DebrisFlow': 'src/tasks/task-5-web-app-deployment/data/noah/DebrisFlow-projected.parquet',
-        'Flood-5yr': 'src/tasks/task-5-web-app-deployment/data/noah/flood-5yr-projected.parquet',
-        'StormSurgeAdvisory1': 'src/tasks/task-5-web-app-deployment/data/noah/StormSurgeAdvisory1-projected.parquet'}
-
-    colors = {
-        'AlluvialFan': 'green',
-        'DebrisFlow': 'blue',
-        'Flood-5yr': 'orange',
-        'StormSurgeAdvisory1': 'red'}
+    # noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
+    
+    # geodata = get_data_noah(noah_folder)
+    # gdf_AlluvialFan = geodata['AlluvialFan']
+    # gdf_DebrisFlow = geodata['DebrisFlow']
+    # gdf_flood_5yr = geodata['flood-5yr']
+    # gdf_StormSurgeAdvisory1 = geodata['StormSurgeAdvisory1']
 
     # Add map.
     def map_ph(data, name):
@@ -283,41 +295,91 @@ def main():
         pov = data[cond]['Poverty_Incidents'].tolist()
         hop = data[cond]['Hospital'].tolist()
 
-        html = '''<h4>Vulnerability Info</h4>
-        <b>City/Town:<br /> %s</b> <br /><br />
-        <b>Vulnerability: </b> %s <br />
-        <b>Population: </b> %s <br />
-        <b>Poverty_Incidents: </b> %s <br />
-        <b>Hospital: </b> %s <br />
+        html = f''' <div style="font-family: monospace;font-size: 1rem;">
+        <h4 style="font-size:1.05rem;">Vulnerability Info</h4>
+        <ul style="list-style-type: none;margin: 0;padding: 0;">
+        <li>City/Town: </li>
+        <li> <b> %s</b></li>
+        <li>Vulnerability: <b> %s</b></li>
+        <li>Population: <b> %s</b></li>
+        <li>Poverty: <b> %s</b></li>
+        <li>Hospital: <b> %s</b></li>
+        <li>Model:</li>
+        <li>{option}: <b> {cluster}</b></li>
+        </ul>  
+        </div>
         '''
 
         if lat and lon:
-            map = flm.Map(location=[lat[0], lon[0]], zoom_start=6, zoom_control=True, zoom_end=20, scrollWheelZoom=False)
+            map = flm.Map(location=[lat[0], lon[0]], zoom_start=8, scrollWheelZoom=False)
         else:
             return None
 
         fg = flm.FeatureGroup(name='Philippines Map')
+        # fg2 = flm.FeatureGroup(name='Disaster Layers')
 
         marker_props = {'low': {'color': 'green', 'size': 10},
                     'medium': {'color': 'blue', 'size': 10},
                     'high': {'color': 'red', 'size': 15}}
 
         for lt, ln, nm, vu, po, pv, ho in zip((lat), (lon), (nam), (vul), (pop), (pov), (hop)):
-            iframe = flm.IFrame(html = html % ((nm), (vu), (po), (pv), (ho)), height = 210)
+            iframe = flm.IFrame(html = html % ((nm), (vu), (po), (pv), int((ho))), height = 210)
             popup = flm.Popup(iframe, min_width=200, max_width=500)
             props = marker_props[vu]
-            marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.7)
+            marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.5)
             fg.add_child(marker)
             map.add_child(fg)
-            # print(len(vul))
-            # print(marker_sized)
+        
+        # Add layers for geospatial data
+        # gdfs = {
+        #     'AlluvialFan': geodata['AlluvialFan'],
+        #     'DebrisFlow': geodata['DebrisFlow'],
+        #     'flood-5yr': geodata['flood-5yr'],
+        #     'StormSurgeAdvisory1': geodata['StormSurgeAdvisory1']
+        # }
+
+        # colors = {
+        #     'AlluvialFan': 'blue',
+        #     'DebrisFlow': 'green',
+        #     'flood-5yr': 'red',
+        #     'StormSurgeAdvisory1': 'orange'
+        # }
+
+        # for gdf_name, color in colors.items():
+        #     if gdf_name in gdfs:
+        #         gdf = gdfs[gdf_name]
+        #         geojson = gdf.__geo_interface__
+        #         style = {'color': color, 'fillOpacity': 0.1}
+        #         layer = flm.GeoJson(data=geojson, style_function=lambda x: style)
+        #         map.add_child(layer)
+        
+        # flm.LayerControl().add_to(map_ph)
+        
         # map.save('map.html')
         st_map = st_folium(map, width=1600)
         return st_map
     
-    
+    # Set columns.
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        # Create lists for dropdowns.
+        prov_list = list(df1['Province'].unique())
+        prov_list.sort()
+        province = st.selectbox(
+            'Province', prov_list, len(prov_list) - 1,
+            help='Select the Province'
+        )
+    with col2:
+        st.write('place holder')
+
+    with col3:
+        st.write('place holder')
+
+    with col4:
+        st.write('place holder')
     with st.container():
-        map_ph(df1, 'Palawan')
+        map_ph(df1, province)
 
     
     col1, col2 = st.columns(2)
