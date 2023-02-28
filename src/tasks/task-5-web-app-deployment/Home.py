@@ -275,6 +275,15 @@ def main():
             '''
             st.markdown(result, unsafe_allow_html=True)
 
+    map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
+    df1 = get_map_data(map_url)
+
+    noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
+    
+    geodata = get_data_noah(noah_folder)
+    gdf_StormSurgeAdvisory1_1 = geodata['StormSurgeAdvisory1_1'][0]
+    gdf_StormSurgeAdvisory1_2 = geodata['StormSurgeAdvisory1_1'][1]
+    gdf_StormSurgeAdvisory1_3 = geodata['StormSurgeAdvisory1_1'][2]
 
     # Add map.
     def map_ph(data, name):
