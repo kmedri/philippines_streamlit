@@ -91,11 +91,6 @@ def main():
         font-weight: 600;
         color: #2c39b1;
         }
-        .row-widget.stSelectbox {
-        padding: 10px;
-        background: #ffffff;
-        border-radius: 7px;
-        }
         .row-widget.stRadio {
         padding: 10px;
         background: #ffffff;
@@ -107,16 +102,9 @@ def main():
         font-variant-caps: small-caps;
         border-bottom: 3px solid #4abd82;
         }
-        .css-12w0qpk.e1tzin5v2 {
-        background: #d2d2d2;
-        padding: 5px 10px;
-        }
         label.css-18ewatb.e16fv1kl2 {
         font-variant: small-caps;
         font-size: 1em;
-        }
-        .css-1xarl3l.e16fv1kl1 {
-        float: right;
         }
         div[data-testid="stSidebarNav"] li div a {
         margin-left: 1rem;
@@ -141,12 +129,13 @@ def main():
         .css-1vq4p4l h2 {
         font-size: 1.6rem;
         }
-        .row-widget.stSelectbox {
-        border-radius: 0;
-        border: 1px tomato solid;
-        }
         .st-bu {
         font-weight: bold;
+        }
+        .css-1whk732 {
+        -webkit-box-pack: end;
+        justify-content: flex-end;
+        flex: 1 1 0%;
         }
         </style>
         """, unsafe_allow_html=True
@@ -154,7 +143,6 @@ def main():
 
     #  st.image('src/tasks/task-5-web-app-deployment/assets/header.png')
     st.title(APP_TITLE)
-    st.write('**Under Construction** - Please be aware we are currently building this app, so it will change over the next few weeks. Thank you for your patience.')
 
     # Load data and create data frames for the Model
     data = get_data('src/tasks/task-5-web-app-deployment/data/model')
@@ -173,9 +161,14 @@ def main():
         </div>
         """
         st.markdown(html_temp, unsafe_allow_html=True)
-        Disaster, Eclnomy, Health, Industry, Poverty = 'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl', 'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl', 'src/tasks/task-5-web-app-deployment/pckls/health.pkl', 'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl', 'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl'
+        Disaster, Economy, Health, Industry, Poverty = (
+            'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl',
+            'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl',
+            'src/tasks/task-5-web-app-deployment/pckls/health.pkl',
+            'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl',
+            'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl')
 
-        models = {'Disaster': Disaster, 'Eclnomy': Eclnomy,
+        models = {'Disaster': Disaster, 'Economy': Economy,
         'Health': Health, 'Industry': Industry, 'Poverty': Poverty}
 
         model_names = models.keys()
@@ -219,14 +212,25 @@ def main():
             """
             x = load_df().loc[city].values.reshape(1, -1)
             cluster = kmeans.predict(x)[0]
-            if cluster == 0:
-                return 'Medium'
-            elif cluster == 1:
-                return 'Low'
-            else:
-                return 'High'
-            
-            
+            map_dict = {
+                ('Industry', 0): 'Low',
+                ('Industry', 1): 'High',
+                ('Industry', 2): 'Medium',
+                ('Health', 0): 'Medium',
+                ('Health', 1): 'Low',
+                ('Health', 2): 'High',
+                ('Poverty', 1): 'Low',
+                ('Poverty', 2): 'Medium',
+                ('Poverty', 0): 'High',
+                ('Disaster', 1): 'Medium',
+                ('Disaster', 2): 'High',
+                ('Disaster', 0): 'Low',
+                ('Economy', 1): 'Medium',
+                ('Economy', 2): 'High',
+                ('Economy', 0): 'Low'}
+            return map_dict.get((option, cluster), None)
+
+
         def display_sliders():
             """
             Creates sliders.
@@ -272,17 +276,6 @@ def main():
             st.markdown(result, unsafe_allow_html=True)
 
 
-    map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
-    df1 = get_map_data(map_url)
-
-    # noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
-    
-    # geodata = get_data_noah(noah_folder)
-    # gdf_AlluvialFan = geodata['AlluvialFan']
-    # gdf_DebrisFlow = geodata['DebrisFlow']
-    # gdf_flood_5yr = geodata['flood-5yr']
-    # gdf_StormSurgeAdvisory1 = geodata['StormSurgeAdvisory1']
-
     # Add map.
     def map_ph(data, name):
         cond = data['Province'] == name
@@ -303,9 +296,7 @@ def main():
         <li>Vulnerability: <b> %s</b></li>
         <li>Population: <b> %s</b></li>
         <li>Poverty: <b> %s</b></li>
-        <li>Hospital: <b> %s</b></li>
-        <li>Model:</li>
-        <li>{option}: <b> {cluster}</b></li>
+        <li>Hospitals: <b> %s</b></li>
         </ul>  
         </div>
         '''
@@ -315,8 +306,29 @@ def main():
         else:
             return None
 
-        fg = flm.FeatureGroup(name='Philippines Map')
-        # fg2 = flm.FeatureGroup(name='Disaster Layers')
+        fg = flm.FeatureGroup(name='Philippines Cities')
+        fg1 = flm.FeatureGroup(name='Storm Surge 4 metres')
+        fg2 = flm.FeatureGroup(name='Storm Surge 3 metres')
+        fg3 = flm.FeatureGroup(name='Storm Surge 2 metres')
+
+        # loop through the dataframes and create a GeoJSON layer for each row
+        for df, fg, clr in [(gdf_StormSurgeAdvisory1_1, fg1, 'blue'), (gdf_StormSurgeAdvisory1_2, fg2, 'orange'), (gdf_StormSurgeAdvisory1_3, fg3, 'red')]:
+            for _, r in df.iterrows():
+                simple_geo = gpd.GeoSeries(r['geometry']).simplify(tolerance=0.001)
+                geo_j = simple_geo.to_json()
+                geo_j = flm.GeoJson(data=geo_j, style_function=lambda x: {'fillColor': clr})
+                fg.add_child(geo_j)
+                map.add_child(fg)
+                
+
+            parent_group = flm.FeatureGroup(name='Storm Surge Group')
+
+            # create a control group for the feature groups
+            toggleable_group = flm.plugins.FeatureGroupSubGroup(parent_group, name='Toggleable Layers')
+
+            toggleable_group.add_to(parent_group)
+            # add the control group to the map
+            parent_group.add_to(map)
 
         marker_props = {'low': {'color': 'green', 'size': 10},
                     'medium': {'color': 'blue', 'size': 10},
@@ -324,41 +336,31 @@ def main():
 
         for lt, ln, nm, vu, po, pv, ho in zip((lat), (lon), (nam), (vul), (pop), (pov), (hop)):
             iframe = flm.IFrame(html = html % ((nm), (vu), (po), (pv), int((ho))), height = 210)
-            popup = flm.Popup(iframe, min_width=200, max_width=500)
+            popup = flm.Popup(iframe, min_width=200, max_width=650)
             props = marker_props[vu]
             marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.5)
             fg.add_child(marker)
             map.add_child(fg)
-        
-        # Add layers for geospatial data
-        # gdfs = {
-        #     'AlluvialFan': geodata['AlluvialFan'],
-        #     'DebrisFlow': geodata['DebrisFlow'],
-        #     'flood-5yr': geodata['flood-5yr'],
-        #     'StormSurgeAdvisory1': geodata['StormSurgeAdvisory1']
-        # }
 
-        # colors = {
-        #     'AlluvialFan': 'blue',
-        #     'DebrisFlow': 'green',
-        #     'flood-5yr': 'red',
-        #     'StormSurgeAdvisory1': 'orange'
-        # }
+        # create layer control and add it to the map
+        layer_ctrl = flm.LayerControl(collapsed=False)
+        layer_ctrl.add_to(map)
 
-        # for gdf_name, color in colors.items():
-        #     if gdf_name in gdfs:
-        #         gdf = gdfs[gdf_name]
-        #         geojson = gdf.__geo_interface__
-        #         style = {'color': color, 'fillOpacity': 0.1}
-        #         layer = flm.GeoJson(data=geojson, style_function=lambda x: style)
-        #         map.add_child(layer)
-        
-        # flm.LayerControl().add_to(map_ph)
-        
+
         # map.save('map.html')
         st_map = st_folium(map, width=1600)
         return st_map
+
+    tot_pop = df1['Population'].sum()
+    pop_growth = int(df1['Population'].sum()) - 102897634
     
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("This map sponsored by Omdena and United Nations (Habitat) provides information regarding vulnerable areas in the Philippines. It shows previous data around 3 indexes: Poverty, Health and Climate Disaster vulnerability and aims to aid NGOs, government officials and citizens in better understanding the Philippines and its most vulnerable areas. The tool also projects to the future by predicting areas at most risk with the goal of providing entities with an effective tool that would help them appropriately distribute resources and aid. ")
+
+    with col2:
+        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+
     # Set columns.
     col1, col2, col3, col4 = st.columns(4)
 
@@ -367,31 +369,30 @@ def main():
         prov_list = list(df1['Province'].unique())
         prov_list.sort()
         province = st.selectbox(
-            'Province', prov_list, len(prov_list) - 1,
-            help='Select the Province'
+            'Select Province', prov_list, len(prov_list) - 1,
+            help='Select the Province, and then click on the map for city statistics.'
         )
     with col2:
-        st.write('place holder')
+        # Find the number of hospitals in the province,
+        # calculate the population in the province, calculate the
+        # total population and number of people per hospital.
+        # Calculate if the number of hospitals is over or under
+        # the average by number of hospitals
+        hospitals = int(df1.groupby(['Province'])['Hospital'].sum()[province])
+        prov_pop = df1.groupby(['Province'])['Population'].sum()[province]
+        per_pop = int(df1['Population'].sum() / df1['Hospital'].sum())
+        act_pop = prov_pop / per_pop
+        diff = int(hospitals - act_pop)
+        st.metric('Hospitals by Province', hospitals, f'{diff} from national average')
 
     with col3:
-        st.write('place holder')
+        prov_pop = df1.groupby(['Province'])['Population'].sum()[province]
+        st.metric('Province Population', prov_pop, 'Total')
 
     with col4:
-        st.write('place holder')
+        st.metric('Total Population', tot_pop, f'{pop_growth} from last year')
     with st.container():
         map_ph(df1, province)
-
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader('Sub Header Left')
-        st.write('Column One')
-        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
-
-    with col2:
-        st.subheader('Sub Header Right')
-        st.write('Column Two')
-        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
 
 if __name__ == "__main__":
     main()
