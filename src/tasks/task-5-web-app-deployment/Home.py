@@ -281,9 +281,9 @@ def main():
     noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
     
     geodata = get_data_noah(noah_folder)
-    gdf_StormSurgeAdvisory1_1 = geodata['StormSurgeAdvisory1_1'][0]
-    gdf_StormSurgeAdvisory1_2 = geodata['StormSurgeAdvisory1_1'][1]
-    gdf_StormSurgeAdvisory1_3 = geodata['StormSurgeAdvisory1_1'][2]
+    gdf_StormSurgeAdvisory1_1 = geodata['ss1']
+    gdf_StormSurgeAdvisory1_2 = geodata['ss2']
+    gdf_StormSurgeAdvisory1_3 = geodata['ss3']
 
     # Add map.
     def map_ph(data, name):
