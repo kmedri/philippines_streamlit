@@ -5,6 +5,7 @@ import os
 import pickle as pkl
 import folium as flm
 from streamlit_folium import st_folium
+from PIL import Image
 
 APP_TITLE = 'Mapping Urban Vulnerability areas'
 st.set_page_config(page_title='Home', layout='wide')
@@ -141,7 +142,6 @@ def main():
         """, unsafe_allow_html=True
     )
 
-    #  st.image('src/tasks/task-5-web-app-deployment/assets/header.png')
     st.title(APP_TITLE)
 
     # Load data and create data frames for the Model
@@ -154,13 +154,14 @@ def main():
 
     # Create the sidebar and add Model
     with st.sidebar:
-        st.header("Cluster Prediction")
-        html_temp = """
-        <div style="background-color:tomato;padding:10px">
-        <h2 style="color:white;text-align:center;">Municipality Cluster Prediction Application </h2>
-        </div>
-        """
-        st.markdown(html_temp, unsafe_allow_html=True)
+        st.header('Omdena Philippines')
+        st.write('Sponcered by')
+        image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
+        st.image(image1)
+        image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
+        st.image(image2)
+        st.header('Cluster Prediction')
+
         Disaster, Economy, Health, Industry, Poverty = (
             'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl',
             'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl',
