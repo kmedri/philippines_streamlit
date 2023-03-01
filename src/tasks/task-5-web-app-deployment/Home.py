@@ -275,17 +275,8 @@ def main():
             '''
             st.markdown(result, unsafe_allow_html=True)
 
-
     map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
     df1 = get_map_data(map_url)
-
-    # noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
-    
-    # geodata = get_data_noah(noah_folder)
-    # gdf_AlluvialFan = geodata['AlluvialFan']
-    # gdf_DebrisFlow = geodata['DebrisFlow']
-    # gdf_flood_5yr = geodata['flood-5yr']
-    # gdf_StormSurgeAdvisory1 = geodata['StormSurgeAdvisory1']
 
     # Add map.
     def map_ph(data, name):
@@ -318,7 +309,6 @@ def main():
             return None
 
         fg = flm.FeatureGroup(name='Philippines Map')
-        # fg2 = flm.FeatureGroup(name='Disaster Layers')
 
         marker_props = {'low': {'color': 'green', 'size': 10},
                     'medium': {'color': 'blue', 'size': 10},
