@@ -39,22 +39,22 @@ def get_map_data(url):
 
 
 # Load the Noah DATA and cache.
-@st.cache_data
-def get_data_noah(folder):
-    """
-    Load the data in a function so we can cache the files.
+# @st.cache_data
+# def get_data_noah(folder):
+#     """
+#     Load the data in a function so we can cache the files.
 
-    Returns:
-        pd.Dataframe: Returns a data frame.
-    """
-    data_folder = folder
-    files = [f for f in os.listdir(data_folder) if f.endswith('.parquet')]
-    gdfs = {}
-    for file in files:
-        gdf_name = os.path.splitext(file)[0]
-        gdf = gpd.read_parquet(os.path.join(data_folder, file))
-        gdfs[gdf_name] = gdf.set_index(gdf.columns[0])
-    return gdfs
+#     Returns:
+#         pd.Dataframe: Returns a data frame.
+#     """
+#     data_folder = folder
+#     files = [f for f in os.listdir(data_folder) if f.endswith('.parquet')]
+#     gdfs = {}
+#     for file in files:
+#         gdf_name = os.path.splitext(file)[0]
+#         gdf = gpd.read_parquet(os.path.join(data_folder, file))
+#         gdfs[gdf_name] = gdf.set_index(gdf.columns[0])
+#     return gdfs
     
 
 # Create the landing page.
@@ -275,15 +275,17 @@ def main():
             '''
             st.markdown(result, unsafe_allow_html=True)
 
+
     map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
     df1 = get_map_data(map_url)
 
-    noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
+    # noah_folder = 'src/tasks/task-5-web-app-deployment/data/noah'
     
-    geodata = get_data_noah(noah_folder)
-    gdf_StormSurgeAdvisory1_1 = geodata['ss1']
-    gdf_StormSurgeAdvisory1_2 = geodata['ss2']
-    gdf_StormSurgeAdvisory1_3 = geodata['ss3']
+    # geodata = get_data_noah(noah_folder)
+    # gdf_AlluvialFan = geodata['AlluvialFan']
+    # gdf_DebrisFlow = geodata['DebrisFlow']
+    # gdf_flood_5yr = geodata['flood-5yr']
+    # gdf_StormSurgeAdvisory1 = geodata['StormSurgeAdvisory1']
 
     # Add map.
     def map_ph(data, name):
@@ -315,29 +317,8 @@ def main():
         else:
             return None
 
-        fg = flm.FeatureGroup(name='Philippines Cities')
-        fg1 = flm.FeatureGroup(name='Storm Surge 4 metres')
-        fg2 = flm.FeatureGroup(name='Storm Surge 3 metres')
-        fg3 = flm.FeatureGroup(name='Storm Surge 2 metres')
-
-        # loop through the dataframes and create a GeoJSON layer for each row
-        for df, fg, clr in [(gdf_StormSurgeAdvisory1_1, fg1, 'blue'), (gdf_StormSurgeAdvisory1_2, fg2, 'orange'), (gdf_StormSurgeAdvisory1_3, fg3, 'red')]:
-            for _, r in df.iterrows():
-                simple_geo = gpd.GeoSeries(r['geometry']).simplify(tolerance=0.001)
-                geo_j = simple_geo.to_json()
-                geo_j = flm.GeoJson(data=geo_j, style_function=lambda x: {'fillColor': clr})
-                fg.add_child(geo_j)
-                map.add_child(fg)
-                
-
-            parent_group = flm.FeatureGroup(name='Storm Surge Group')
-
-            # create a control group for the feature groups
-            toggleable_group = flm.plugins.FeatureGroupSubGroup(parent_group, name='Toggleable Layers')
-
-            toggleable_group.add_to(parent_group)
-            # add the control group to the map
-            parent_group.add_to(map)
+        fg = flm.FeatureGroup(name='Philippines Map')
+        # fg2 = flm.FeatureGroup(name='Disaster Layers')
 
         marker_props = {'low': {'color': 'green', 'size': 10},
                     'medium': {'color': 'blue', 'size': 10},
@@ -350,11 +331,6 @@ def main():
             marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.5)
             fg.add_child(marker)
             map.add_child(fg)
-
-        # create layer control and add it to the map
-        layer_ctrl = flm.LayerControl(collapsed=False)
-        layer_ctrl.add_to(map)
-
 
         # map.save('map.html')
         st_map = st_folium(map, width=1600)
