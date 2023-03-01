@@ -264,15 +264,25 @@ def main():
         if st.button('Recalculate'):
             x = pd.DataFrame(sliders, index=[selected_city])
             new_cluster = kmeans.predict(x)[0]
-            if new_cluster == 0:
-                new_cluster = 'Medium'
-            elif new_cluster == 1:
-                new_cluster = 'Low'
-            elif new_cluster == 2:
-                new_cluster = 'High'
-            
+            map_dict = {
+                ('Industry', 0): 'Low',
+                ('Industry', 1): 'High',
+                ('Industry', 2): 'Medium',
+                ('Health', 0): 'Medium',
+                ('Health', 1): 'Low',
+                ('Health', 2): 'High',
+                ('Poverty', 1): 'Low',
+                ('Poverty', 2): 'Medium',
+                ('Poverty', 0): 'High',
+                ('Disaster', 1): 'Medium',
+                ('Disaster', 2): 'High',
+                ('Disaster', 0): 'Low',
+                ('Economy', 1): 'Medium',
+                ('Economy', 2): 'High',
+                ('Economy', 0): 'Low'}
+            new_value = map_dict.get((option, new_cluster), None)
             result = f'''
-            <p class="res">New Level of Vulnerability: {new_cluster}</p>
+            <p class="res">New Level of Vulnerability: {new_value}</p>
             '''
             st.markdown(result, unsafe_allow_html=True)
 
