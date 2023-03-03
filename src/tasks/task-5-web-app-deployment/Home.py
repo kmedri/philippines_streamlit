@@ -285,7 +285,6 @@ def main():
             <p class="res">New Level of Vulnerability: {new_value}</p>
             '''
             st.markdown(result, unsafe_allow_html=True)
-
     map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
     df1 = get_map_data(map_url)
 
