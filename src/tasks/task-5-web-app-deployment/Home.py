@@ -9,9 +9,8 @@ from PIL import Image
 
 APP_TITLE = 'Mapping Urban Vulnerability areas'
 st.set_page_config(page_title='Home', layout='wide')
-print('hello')
 
-# Load the Model DATA and cache.
+# Load the Model DATA and cache
 @st.cache_data
 def get_data(folder):
     """
@@ -30,16 +29,16 @@ def get_data(folder):
     return dfs
 
 
-# Load the Map DATA and cache.
+# Load the Map DATA and cache
 @st.cache_data
 def get_map_data(url):
     # gdf = gpd.read_parquet(url)
     df1 = pd.read_parquet(url)
-    df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column.
+    df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column
     return df1
 
 
-# Load the Noah DATA and cache.
+# Load the Noah DATA and cache
 # @st.cache_data
 # def get_data_noah(folder):
 #     """
@@ -58,14 +57,14 @@ def get_map_data(url):
 #     return gdfs
     
 
-# Create the landing page.
+# Create the landing page
 def main():
     # Base Colors:
     # Blue = #182D40
     # Light Blue = #82a6c0
     # Green = #4abd82
 
-    # Add custom CSS.
+    # Add custom CSS
     st.markdown(
         """
         <style>
@@ -145,152 +144,23 @@ def main():
     st.title(APP_TITLE)
 
     # Load data and create data frames for the Model
-    data = get_data('src/tasks/task-5-web-app-deployment/data/model')
-    df_disaster = data['disaster'].iloc[: , :-2]
-    df_dweg = data['dweg'].iloc[: , :-2]
-    df_health = data['health'].iloc[: , :-2]
-    df_industry = data['industry_II'].iloc[: , :-2]
-    df_poverty = data['poverty'].iloc[: , :-2]
+    # data = get_data('src/tasks/task-5-web-app-deployment/data/model')
+    # df_disaster = data['disaster']
+    # df_dweg = data['dweg']
+    # df_health = data['health']
+    # df_industry = data['industry_II']
+    # df_poverty = data['poverty']
 
-    # Create the sidebar and add Model
-    with st.sidebar:
-        st.header('Omdena Philippines')
-        st.write('Sponcered by')
-        image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
-        st.image(image1)
-        image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
-        st.image(image2)
-        st.header('Cluster Prediction')
-
-        Disaster, Economy, Health, Industry, Poverty = (
-            'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl',
-            'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl',
-            'src/tasks/task-5-web-app-deployment/pckls/health.pkl',
-            'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl',
-            'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl')
-
-        models = {'Disaster': Disaster, 'Economy': Economy,
-        'Health': Health, 'Industry': Industry, 'Poverty': Poverty}
-
-        model_names = models.keys()
-
-        option = st.selectbox(
-            'Please Select the Pillar', options=model_names,
-            help='Here are 5 pillars that can influence the vulnerability of a City')
-
-        with open(models[option], 'rb') as file:
-            kmeans = pkl.load(file)
-
-
-        def load_df():
-            """
-            Loads the correct data frame the options drop down.
-
-            Returns:
-                pd.Dataframe: Returns relevant data frame.
-            """
-            if option == 'Disaster':
-                return df_disaster
-            elif option == 'Vulnerability':
-                return df_dweg
-            elif option == 'Health':
-                return df_health
-            elif option == 'Industry':
-                return df_industry
-            else:
-                return df_poverty
-        
-        
-        def get_cluster(city):
-            """
-            Create clusters for mapping to output.
-
-            Args:
-                city (str): City name.
-
-            Returns:
-                str: Vulnerability level.
-            """
-            x = load_df().loc[city].values.reshape(1, -1)
-            cluster = kmeans.predict(x)[0]
-            map_dict = {
-                ('Industry', 0): 'Low',
-                ('Industry', 1): 'High',
-                ('Industry', 2): 'Medium',
-                ('Health', 0): 'Medium',
-                ('Health', 1): 'Low',
-                ('Health', 2): 'High',
-                ('Poverty', 1): 'Low',
-                ('Poverty', 2): 'Medium',
-                ('Poverty', 0): 'High',
-                ('Disaster', 1): 'Medium',
-                ('Disaster', 2): 'High',
-                ('Disaster', 0): 'Low',
-                ('Economy', 1): 'Medium',
-                ('Economy', 2): 'High',
-                ('Economy', 0): 'Low'}
-            return map_dict.get((option, cluster), None)
-
-
-        def display_sliders():
-            """
-            Creates sliders.
-
-            Returns:
-                st.slider: Slider values based on cluster.
-            """
-            sliders = {}
-            for col in load_df().columns:
-                min_val = load_df()[col].min()
-                max_val = load_df()[col].max()
-                val = load_df()[col].loc[selected_city]
-                sliders[col] = st.slider(f'''**{col}**''', min_value = float(min_val), max_value = float(max_val), value = float(val))
-            return sliders
-
-        # Add a dropdown to select the city.
-        selected_city = st.selectbox('Select a city:', load_df().index)
-
-        # Display the current cluster group for the selected city.
-        cluster = get_cluster(selected_city)
-        result = f'''
-        <p class="res">Level of Vulnerability: {cluster}</p>
-        '''
-        st.markdown(result, unsafe_allow_html=True)
-
-        # Display the slider widgets.
-        sliders = display_sliders()
-
-        # Add a button to recalculate the cluster group.
-        if st.button('Recalculate'):
-            x = pd.DataFrame(sliders, index=[selected_city])
-            new_cluster = kmeans.predict(x)[0]
-            map_dict = {
-                ('Industry', 0): 'Low',
-                ('Industry', 1): 'High',
-                ('Industry', 2): 'Medium',
-                ('Health', 0): 'Medium',
-                ('Health', 1): 'Low',
-                ('Health', 2): 'High',
-                ('Poverty', 1): 'Low',
-                ('Poverty', 2): 'Medium',
-                ('Poverty', 0): 'High',
-                ('Disaster', 1): 'Medium',
-                ('Disaster', 2): 'High',
-                ('Disaster', 0): 'Low',
-                ('Economy', 1): 'Medium',
-                ('Economy', 2): 'High',
-                ('Economy', 0): 'Low'}
-            new_value = map_dict.get((option, new_cluster), None)
-            result = f'''
-            <p class="res">New Level of Vulnerability: {new_value}</p>
-            '''
-            st.markdown(result, unsafe_allow_html=True)
     map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
     df1 = get_map_data(map_url)
 
     # Add map.
-    def map_ph(data, name):
-        cond = data['Province'] == name
+    def map_ph(data, name, prov):
+        cond = (
+            data['Country'] == name
+                ) & (
+                data['Province'] == prov
+                    )
 
         lat = data[cond]['Latitude'].tolist()
         lon = data[cond]['Longitude'].tolist()
@@ -332,7 +202,7 @@ def main():
             fg.add_child(marker)
             map.add_child(fg)
 
-        # map.save('map.html')
+        map.save('map1.html')
         st_map = st_folium(map, width=1600)
         return st_map
 
@@ -345,39 +215,46 @@ def main():
 
     with col2:
         st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+    df1 = df1.assign(Country='Philippines')
+    # st.dataframe(df1)
+    # st.dataframe(df_disaster)
 
-    # Set columns.
-    col1, col2, col3, col4 = st.columns(4)
+    # Set columns
+    col1, col2 = st.columns(2)
 
     with col1:
-        # Create lists for dropdowns.
+        # Create lists for dropdowns
+        country_list = list(df1['Country'].unique())
+        country_list.sort()
+        country = st.selectbox(
+            'Select Country', country_list, len(country_list) - 1,
+            help='Select the Country, and then click on the map for city statistics.'
+        )
+    with col2:
+        # Create lists for dropdowns
         prov_list = list(df1['Province'].unique())
         prov_list.sort()
         province = st.selectbox(
             'Select Province', prov_list, len(prov_list) - 1,
             help='Select the Province, and then click on the map for city statistics.'
         )
-    with col2:
+
+    with st.container():
+        map_ph(df1, country, province)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
         # Find the number of hospitals in the province,
-        # calculate the population in the province, calculate the
-        # total population and number of people per hospital.
-        # Calculate if the number of hospitals is over or under
-        # the average by number of hospitals
+        # calculate the average and display number over/under
         hospitals = int(df1.groupby(['Province'])['Hospital'].sum()[province])
         prov_pop = df1.groupby(['Province'])['Population'].sum()[province]
         per_pop = int(df1['Population'].sum() / df1['Hospital'].sum())
         act_pop = prov_pop / per_pop
         diff = int(hospitals - act_pop)
         st.metric('Hospitals by Province', hospitals, f'{diff} from national average')
-
-    with col3:
-        prov_pop = df1.groupby(['Province'])['Population'].sum()[province]
-        st.metric('Province Population', prov_pop, 'Total')
-
-    with col4:
+    with col2:
         st.metric('Total Population', tot_pop, f'{pop_growth} from last year')
-    with st.container():
-        map_ph(df1, province)
 
 if __name__ == "__main__":
     main()
