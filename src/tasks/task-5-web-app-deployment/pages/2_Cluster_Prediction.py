@@ -41,6 +41,9 @@ def main():
     st.markdown(
         """
         <style>
+        .css-k1ih3n {
+            padding: 2rem 1rem 10rem;
+        }
         .block-container.css-18e3th9.egzxvld2 {
         padding-top: 0;
         }
@@ -114,6 +117,18 @@ def main():
         """, unsafe_allow_html=True
     )
 
+    col1, col2, col3 = st.columns((1, 1, 1))
+    with col1:
+        image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
+        st.image(image2)
+
+    with col2:
+        st.write('')
+
+    with col3:
+        image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
+        st.image(image1)
+
     st.title(APP_TITLE)
 
     # Load data and create data frames for the Model
@@ -124,21 +139,10 @@ def main():
     df_industry = data['industry_II']
     df_poverty = data['poverty']
 
-    # Create the sidebar and add Model
-   
-    st.header('Omdena Philippines')
-    st.write('Sponsored by')
+    # Create the divs and add Model
     col1, col2 = st.columns(2)
     with col1:
-        image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
-        st.image(image1)
-    with col2:
-        image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
-        st.image(image2)
-    st.header('Cluster Prediction')
-    # Create the sidebar and add Model
-    col1, col2 = st.columns(2)
-    with col1:
+        st.subheader('Cluster Prediction')
         Disaster, Economy, Health, Industry, Poverty = (
             'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl',
             'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl',
@@ -151,9 +155,7 @@ def main():
 
         model_names = models.keys()
 
-        option = st.selectbox(
-            'Please Select the Pillar', options=model_names,
-            help='Here are 5 pillars that can influence the vulnerability of a City')
+        option = 'Disaster'
 
         with open(models[option], 'rb') as file:
             kmeans = pkl.load(file)
@@ -224,8 +226,16 @@ def main():
                 sliders[col] = st.slider(f'''**{col}**''', min_value = float(min_val), max_value = float(max_val), value = float(val))
             return sliders
 
+        subcol1, subcol2 = col1.columns(2)
+        subcol1.subheader('City Selection')
         # Add a dropdown to select the city.
-        selected_city = st.selectbox('Select a city:', load_df().index)
+        selected_city = subcol1.selectbox('Select a city:', load_df().index)
+
+        subcol2.subheader('Pillar Selection')
+        # Add a dropdown to select the model.
+        option = subcol2.selectbox(
+            'Please Select the Pillar', options=model_names,
+            help='Here are 5 pillars that can influence the vulnerability of a City')
 
         # Display the current cluster group for the selected city.
         cluster = get_cluster(selected_city)
@@ -263,14 +273,30 @@ def main():
             '''
             st.markdown(result, unsafe_allow_html=True)
     with col2:
-        st.write('Text')
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("This map sponsored by Omdena and United Nations (Habitat) provides information regarding vulnerable areas in the Philippines. It shows previous data around 3 indexes: Poverty, Health and Climate Disaster vulnerability and aims to aid NGOs, government officials and citizens in better understanding the Philippines and its most vulnerable areas. The tool also projects to the future by predicting areas at most risk with the goal of providing entities with an effective tool that would help them appropriately distribute resources and aid. ")
-
-    with col2:
-        st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type spvuimen book. It has survived not only five centuries, but also the leap into elvutronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more rvuently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+            st.markdown("We collected data from two main sources, Department of Trade and Industry (DTi) and the Philippine Statistics Authority (PSA).", unsafe_allow_html=True)
+            st.markdown("The DTi data was used to create the 3 indexes: Poverty, Health and Disaster.", unsafe_allow_html=True)
+            st.markdown("The Philippine Statistics Authority data was used to create the Industry index.", unsafe_allow_html=True)
+            st.markdown("The data was then clustered using **K-Means Clustering**.", unsafe_allow_html=True)
+            st.markdown("The clusters were then mapped to the vulnerability levels: Low, Medium and High.", unsafe_allow_html=True)
+            st.markdown("The tool also allows users to change the values of the sliders and see how the vulnerability level changes.", unsafe_allow_html=True)
+            st.markdown("We used the K-Means clustering algorithm to cluster the data.", unsafe_allow_html=True)
+            st.markdown("- It is a simple and easy to implement algorithm.", unsafe_allow_html=True)
+            st.markdown("- It is a fast and efficient algorithm.", unsafe_allow_html=True)
+            st.markdown("- It is a popular algorithm and is used in many applications.", unsafe_allow_html=True)
+            st.markdown("- It is a scalable algorithm.", unsafe_allow_html=True)
+            st.markdown("- It is a robust algorithm.", unsafe_allow_html=True)
+            st.markdown("- It is a stable algorithm.", unsafe_allow_html=True)
+            st.markdown("- It is a well-known algorithm.", unsafe_allow_html=True)
+            st.markdown("- It is a well-understood algorithm.", unsafe_allow_html=True)
+            st.markdown("Download the PDF file containing the full DTI Metadata")
+            with open("src/tasks/task-5-web-app-deployment/assets/dti-index-data-dict.pdf", "rb") as file:
+                btn = st.download_button(
+                        label="Download Pdf",
+                        data=file,
+                        file_name="dti-index-data-dict.pdf",
+                        mime="application/pdf"
+                    )
+            # st.markdown("Download the PDF file containing the full DTI Metadata", st.download_button('Download file', 'src/tasks/task-5-web-app-deployment/assets/dti-index-data-dict.pdf'))
 
 if __name__ == "__main__":
     main()

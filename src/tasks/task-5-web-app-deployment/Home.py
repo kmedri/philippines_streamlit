@@ -33,8 +33,9 @@ def get_data(folder):
 @st.cache_data
 def get_map_data(url):
     # gdf = gpd.read_parquet(url)
-    df1 = pd.read_parquet(url)
-    df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column
+    df1 = pd.read_csv(url)
+    # df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column
+    df1 = pd.DataFrame(df1)
     return df1
 
 
@@ -68,6 +69,9 @@ def main():
     st.markdown(
         """
         <style>
+        .css-k1ih3n {
+            padding: 2rem 1rem 10rem;
+        }
         .block-container.css-18e3th9.egzxvld2 {
         padding-top: 0;
         }
@@ -140,6 +144,17 @@ def main():
         </style>
         """, unsafe_allow_html=True
     )
+    col1, col2, col3 = st.columns((1, 1, 1))
+    with col1:
+        image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
+        st.image(image2)
+
+    with col2:
+        st.write('')
+
+    with col3:
+        image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
+        st.image(image1)
 
     st.title(APP_TITLE)
 
@@ -151,31 +166,41 @@ def main():
     # df_industry = data['industry_II']
     # df_poverty = data['poverty']
 
-    map_url = 'src/tasks/task-5-web-app-deployment/data/mapping_data.parquet'
+    map_url = 'src/tasks/task-5-web-app-deployment/data/all_data.csv'
     df1 = get_map_data(map_url)
+    st.dataframe(df1)
 
     # Add map.
     def map_ph(data, name, prov):
         cond = (
-            data['Country'] == name
+            data['country'] == name
                 ) & (
-                data['Province'] == prov
+                data['province'] == prov
                     )
 
-        lat = data[cond]['Latitude'].tolist()
-        lon = data[cond]['Longitude'].tolist()
-        nam = data[cond]['City'].tolist()
-        vul = data[cond]['Vulnerability'].tolist()
-        pop = data[cond]['Population'].tolist()
-        pov = data[cond]['Poverty_Incidents'].tolist()
-        hop = data[cond]['Hospital'].tolist()
+        lat = data[cond]['latitude'].tolist()
+        lon = data[cond]['longitude'].tolist()
+        nam = data[cond]['city_municipality'].tolist()
+        vul_0 = data[cond]['vulnerability_dist'].tolist()
+        vul_1 = data[cond]['vulnerability_dweg'].tolist()
+        vul_2 = data[cond]['vulnerability_indu'].tolist()
+        vul_3 = data[cond]['vulnerability_heal'].tolist()
+        vul_4 = data[cond]['vulnerability_povt'].tolist()
+        pop = data[cond]['total_population'].tolist()
+        pov = data[cond]['pov_inc'].tolist()
+        hop = data[cond]['hospital'].tolist()
 
         html = f''' <div style="font-family: monospace;font-size: 1rem;">
         <h4 style="font-size:1.05rem;">Vulnerability Info</h4>
         <ul style="list-style-type: none;margin: 0;padding: 0;">
         <li>City/Town: </li>
         <li> <b> %s</b></li>
-        <li>Vulnerability: <b> %s</b></li>
+        <li><b>Vulnerability Levels:</b></li>
+        <li>Disaster: <b> %s</b></li>
+        <li>Economy: <b> %s</b></li>
+        <li>Industry: <b> %s</b></li>
+        <li>Health: <b> %s</b></li>
+        <li>Poverty: <b> %s</b></li>
         <li>Population: <b> %s</b></li>
         <li>Poverty: <b> %s</b></li>
         <li>Hospitals: <b> %s</b></li>
@@ -190,25 +215,22 @@ def main():
 
         fg = flm.FeatureGroup(name='Philippines Map')
 
-        marker_props = {'low': {'color': 'green', 'size': 10},
-                    'medium': {'color': 'blue', 'size': 10},
-                    'high': {'color': 'red', 'size': 15}}
+        marker_props = {'Low': {'color': 'green', 'size': 10},
+                    'Medium': {'color': 'blue', 'size': 10},
+                    'High': {'color': 'red', 'size': 15}}
 
-        for lt, ln, nm, vu, po, pv, ho in zip((lat), (lon), (nam), (vul), (pop), (pov), (hop)):
-            iframe = flm.IFrame(html = html % ((nm), (vu), (po), (pv), int((ho))), height = 210)
+        for lt, ln, nm, v0, v1, v2, v3, v4, po, pv, ho in zip((lat), (lon), (nam), (vul_0), (vul_1), (vul_2), (vul_3), (vul_4), (pop), (pov), (hop)):
+            iframe = flm.IFrame(html = html % ((nm), (v0), (v1), (v2), (v3), (v4), (po), (pv), int((ho))), height = 290)
             popup = flm.Popup(iframe, min_width=200, max_width=650)
-            props = marker_props[vu]
+            props = marker_props[v0]
             marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.5)
             fg.add_child(marker)
             map.add_child(fg)
 
-        map.save('map1.html')
+        # map.save('map1.html')
         st_map = st_folium(map, width=1600)
         return st_map
 
-    tot_pop = df1['Population'].sum()
-    pop_growth = int(df1['Population'].sum()) - 102897634
-    
     col1, col2 = st.columns(2)
     with col1:
         st.write("This map sponsored by Omdena and United Nations (Habitat) provides information regarding vulnerable areas in the Philippines. It shows previous data around 3 indexes: Poverty, Health and Climate Disaster vulnerability and aims to aid NGOs, government officials and citizens in better understanding the Philippines and its most vulnerable areas. The tool also projects to the future by predicting areas at most risk with the goal of providing entities with an effective tool that would help them appropriately distribute resources and aid. ")
@@ -224,7 +246,7 @@ def main():
 
     with col1:
         # Create lists for dropdowns
-        country_list = list(df1['Country'].unique())
+        country_list = list(df1['country'].unique())
         country_list.sort()
         country = st.selectbox(
             'Select Country', country_list, len(country_list) - 1,
@@ -232,7 +254,7 @@ def main():
         )
     with col2:
         # Create lists for dropdowns
-        prov_list = list(df1['Province'].unique())
+        prov_list = list(df1['province'].unique())
         prov_list.sort()
         province = st.selectbox(
             'Select Province', prov_list, len(prov_list) - 1,
@@ -242,18 +264,25 @@ def main():
     with st.container():
         map_ph(df1, country, province)
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         # Find the number of hospitals in the province,
         # calculate the average and display number over/under
-        hospitals = int(df1.groupby(['Province'])['Hospital'].sum()[province])
-        prov_pop = df1.groupby(['Province'])['Population'].sum()[province]
-        per_pop = int(df1['Population'].sum() / df1['Hospital'].sum())
+        hospitals = int(df1.groupby(['province'])['hospitals'].sum()[province])
+        prov_pop = df1.groupby(['province'])['total_population'].sum()[province]
+        per_pop = int(df1['total_population'].sum() / df1['hospitals'].sum())
         act_pop = prov_pop / per_pop
         diff = int(hospitals - act_pop)
         st.metric('Hospitals by Province', hospitals, f'{diff} from national average')
+
     with col2:
+        # prov_pop = df1.groupby(['Province'])['Population'].sum()[province]
+        st.metric('Province Population', prov_pop, 'Total')
+
+    with col3:
+        tot_pop = df1['total_population'].sum()
+        pop_growth = int(df1['total_population'].sum()) - 102897634
         st.metric('Total Population', tot_pop, f'{pop_growth} from last year')
 
 if __name__ == "__main__":

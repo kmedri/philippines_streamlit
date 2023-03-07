@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import missingno as msno
+# import missingno as msno
 import altair as alt
 import io
+from PIL import Image
 
 APP_TITLE = 'Mapping Urban Vulnerability areas'
 st.set_page_config(page_title='EDA', layout='wide')
@@ -16,8 +17,8 @@ def get_data(url):
     return df
 
 
-url = 'src/tasks/task-5-web-app-deployment/data/merged_model_output.csv'
-df = get_data(url)
+url = 'src/tasks/task-5-web-app-deployment/data/all_data.csv'
+df1 = get_data(url)
 
 
 def main():
@@ -29,6 +30,9 @@ def main():
     st.markdown(
         """
         <style>
+        .css-k1ih3n {
+            padding: 2rem 1rem 10rem;
+        }
         .block-container.css-18e3th9.egzxvld2 {
         padding-top: 0;
         }
@@ -96,35 +100,35 @@ def main():
         """, unsafe_allow_html=True
     )
 
-    # col1, col2 = st.columns((1, 3))
-    # with col1:
-    #     st.image('assets/Omdena-Logo.png')
-    # with col2:
-    st.image('src/tasks/task-5-web-app-deployment/assets/header.png')
-    st.title(APP_TITLE)
-    st.write('**Under Construction** - Please be aware we are currently building this app, so it will change over the next few weeks. Thank you for your patience.')
+    col1, col2, col3 = st.columns((1, 1, 1))
+    with col1:
+        image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
+        st.image(image2)
+
+    with col2:
+        st.write('')
+
+    with col3:
+        image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
+        st.image(image1)
 
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader('Sub Header Left')
-        st.write('Column One')
-        st.markdown('#### df.info()')
+        st.markdown('#### df1.info()')
         buffer = io.StringIO()
-        df.info(buf=buffer)
+        df1.info(buf=buffer)
         s1 = buffer.getvalue()
 
         st.text(s1)
 
     with col2:
-        st.subheader('Sub Header Right')
-        st.write('Column One')
-        st.markdown('#### df.head(10)')
-        st.dataframe(df.head(10))
-        st.markdown('#### df.shape')
-        st.dataframe(df.shape)
-        st.markdown('#### msno.matrix(df)')
-        g = msno.matrix(df)
-        st.pyplot(g.figure)
+        st.markdown('#### df1.head(10)')
+        st.dataframe(df1.head(10))
+        st.markdown('#### df1.shape')
+        st.dataframe(df1.shape)
+        # st.markdown('#### msno.matrix(df)')
+        # g = msno.matrix(df)
+        # st.pyplot(g.figure)
 
 
 if __name__ == "__main__":
