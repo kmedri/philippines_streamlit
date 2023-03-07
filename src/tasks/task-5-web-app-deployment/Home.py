@@ -168,7 +168,6 @@ def main():
 
     map_url = 'src/tasks/task-5-web-app-deployment/data/all_data.csv'
     df1 = get_map_data(map_url)
-    st.dataframe(df1)
 
     # Add map.
     def map_ph(data, name, prov):
