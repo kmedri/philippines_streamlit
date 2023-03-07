@@ -257,7 +257,7 @@ def main():
         prov_list = list(df1['province'].unique())
         prov_list.sort()
         province = st.selectbox(
-            'Select Province', prov_list, len(prov_list) - 1,
+            'Select Province', prov_list, index=0,
             help='Select the Province, and then click on the map for city statistics.'
         )
 
