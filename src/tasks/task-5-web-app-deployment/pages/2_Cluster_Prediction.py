@@ -7,7 +7,7 @@ import folium as flm
 from streamlit_folium import st_folium
 from PIL import Image
 
-APP_TITLE = 'Mapping Urban Vulnerability areas'
+APP_TITLE = 'Philippines - Urban Vulnerability Levels'
 st.set_page_config(page_title='Home', layout='wide')
 print('hello')
 
@@ -51,7 +51,6 @@ def main():
         background: none;
         }
         span.css-10trblm.e16nr0p30 {
-        text-align: center;
         color: #2c39b1;
         }
         .css-1dp5vir.e8zbici1 {
@@ -76,7 +75,9 @@ def main():
         font-size: 1.1em;
         font-weight: bold;
         font-variant-caps: small-caps;
-        border-bottom: 3px solid #4abd82;
+        text-decoration-line: underline;
+        text-decoration-color: green;
+        text-underline-offset: 8px;
         }
         label.css-18ewatb.e16fv1kl2 {
         font-variant: small-caps;
@@ -112,6 +113,11 @@ def main():
         -webkit-box-pack: end;
         justify-content: flex-end;
         flex: 1 1 0%;
+        }
+        .css-184tjsw p {
+        word-break: break-word;
+        font-size: 1rem;
+        font-weight: bold;
         }
         </style>
         """, unsafe_allow_html=True

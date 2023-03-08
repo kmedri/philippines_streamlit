@@ -1,12 +1,11 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-# import missingno as msno
-import altair as alt
+import matplotlib.pyplot as plt
+import seaborn as sns
 import io
 from PIL import Image
 
-APP_TITLE = 'Mapping Urban Vulnerability areas'
+APP_TITLE = 'Philippines - Urban Vulnerability Levels'
 st.set_page_config(page_title='EDA', layout='wide')
 
 
@@ -69,7 +68,9 @@ def main():
         font-size: 1.1em;
         font-weight: bold;
         font-variant-caps: small-caps;
-        border-bottom: 3px solid #4abd82;
+        text-decoration-line: underline;
+        text-decoration-color: green;
+        text-underline-offset: 8px;
         }
         .css-12w0qpk.e1tzin5v2 {
         background: #d2d2d2;
@@ -96,6 +97,11 @@ def main():
         width: 2rem;
         height: 2rem;
         }
+        .css-184tjsw p {
+        word-break: break-word;
+        font-size: 1rem;
+        font-weight: bold;
+        }
         </style>
         """, unsafe_allow_html=True
     )
@@ -112,24 +118,99 @@ def main():
         image1 = Image.open('src/tasks/task-5-web-app-deployment/assets/UNHABITAT.png')
         st.image(image1)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('#### df1.info()')
-        buffer = io.StringIO()
-        df1.info(buf=buffer)
-        s1 = buffer.getvalue()
+    st.title(APP_TITLE)
 
-        st.text(s1)
+    st.markdown('#### df1.head(10)')
+    st.dataframe(df1.head(10))
+    st.markdown('#### df1.describe()')
+    st.dataframe(df1.describe())
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("#### st.pyplot(fig1) - Vulnerability Economy")
+        labels = 'High', 'Medium', 'Low'
+        sizes = [472, 1024, 136]
+        explode = (0.1, 0, 0)
+
+        fig1, ax1 = plt.subplots()
+        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90)
+        ax1.axis('equal')
+        st.pyplot(fig1)
 
     with col2:
-        st.markdown('#### df1.head(10)')
-        st.dataframe(df1.head(10))
-        st.markdown('#### df1.shape')
-        st.dataframe(df1.shape)
-        # st.markdown('#### msno.matrix(df)')
-        # g = msno.matrix(df)
-        # st.pyplot(g.figure)
+        st.markdown("#### st.pyplot(fig1) - Vulnerability Disaster")
+        labels = 'High', 'Medium', 'Low'
+        sizes = [142, 1349, 141]
+        explode = (0.1, 0, 0)
 
+        fig1, ax1 = plt.subplots()
+        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90)
+        ax1.axis('equal')
+        st.pyplot(fig1)
+
+    with col3:
+        st.markdown("#### st.pyplot(fig1) - Vulnerability Industry")
+        labels = 'High', 'Medium', 'Low'
+        sizes = [154, 543, 935]
+        explode = (0.1, 0, 0)
+
+        fig1, ax1 = plt.subplots()
+        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90)
+        ax1.axis('equal')
+        st.pyplot(fig1)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("#### st.pyplot(fig1) - Vulnerability Health")
+        labels = 'High', 'Medium', 'Low'
+        sizes = [567, 897, 168]
+        explode = (0.1, 0, 0)
+
+        fig1, ax1 = plt.subplots()
+        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90)
+        ax1.axis('equal')
+        st.pyplot(fig1)
+
+    with col2:
+        st.markdown("#### st.pyplot(fig1) - Vulnerability Poverty")
+        labels = 'High', 'Medium', 'Low'
+        sizes = [247, 813, 572]
+        explode = (0.1, 0, 0)
+
+        fig1, ax1 = plt.subplots()
+        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90)
+        ax1.axis('equal')
+        st.pyplot(fig1)
+
+    with col3:
+        st.write('')
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### sns.distplot(df1['pov_inc']")
+        fig = plt.figure(figsize=(10, 10))
+        sns.distplot(df1['pov_inc'], color='#4abd82', bins=100, hist_kws={'alpha': 0.4})
+        st.pyplot(fig)
+
+    with col2:
+        st.markdown("#### df1['pov_inc'].describe()")
+        st.dataframe(df1['pov_inc'].describe())
+        st.markdown("#### df1.select_dtypes(include=['float64', 'int64'])")
+        df1_num = df1.select_dtypes(include=['float64', 'int64'])
+        st.dataframe(df1_num.head(5))
+        df1.fillna(0, inplace=True)
+
+    st.markdown("#### st.pyplot(fig) - Numeric Features Histograms")
+    df = pd.DataFrame(df1_num)
+    fig, ax = plt.subplots(figsize=(16, 20))
+    ax = df.hist(bins=50, ax=ax)
+    plt.show()
+    st.pyplot(fig)
 
 if __name__ == "__main__":
     main()
