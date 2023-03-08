@@ -16,6 +16,16 @@ def get_data(url):
     return df
 
 
+@st.cache_data
+def nfh():
+    df1_num = df1.select_dtypes(include=['float64', 'int64'])
+    df = pd.DataFrame(df1_num)
+    fig, ax = plt.subplots(figsize=(16, 20))
+    ax = df.hist(bins=50, ax=ax)
+    plt.show()
+    st.pyplot(fig)
+
+
 url = 'src/tasks/task-5-web-app-deployment/data/all_data.csv'
 df1 = get_data(url)
 
@@ -206,11 +216,8 @@ def main():
         df1.fillna(0, inplace=True)
 
     st.markdown("#### st.pyplot(fig) - Numeric Features Histograms")
-    df = pd.DataFrame(df1_num)
-    fig, ax = plt.subplots(figsize=(16, 20))
-    ax = df.hist(bins=50, ax=ax)
-    plt.show()
-    st.pyplot(fig)
+
+    nfh()
 
 if __name__ == "__main__":
     main()
