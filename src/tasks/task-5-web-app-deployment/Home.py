@@ -226,6 +226,36 @@ def main():
         else:
             return None
 
+        fg1 = flm.FeatureGroup(name='Storm Surge 3')
+
+        for _, r in df_list[0][df_list[0]['province'] == prov].iterrows():
+            sim_geo = gpd.GeoSeries(r['geometry'])
+            geo_j = sim_geo.to_json()
+            geo_j = flm.GeoJson(data=geo_j,
+                                style_function=lambda x: {'fillColor': 'red', 'fillOpacity': 0.8})
+            fg1.add_child(geo_j)
+            map.add_child(fg1)
+
+        fg2 = flm.FeatureGroup(name='Storm Surge 2')
+
+        for _, r in df_list[1][df_list[1]['province'] == prov].iterrows():
+            sim_geo = gpd.GeoSeries(r['geometry'])
+            geo_j = sim_geo.to_json()
+            geo_j = flm.GeoJson(data=geo_j,
+                                style_function=lambda x: {'fillColor': 'blue', 'fillOpacity': 0.8})
+            fg2.add_child(geo_j)
+            map.add_child(fg2)
+
+        fg3 = flm.FeatureGroup(name='Storm Surge 1')
+
+        for _, r in df_list[2][df_list[2]['province'] == prov].iterrows():
+            sim_geo = gpd.GeoSeries(r['geometry'])
+            geo_j = sim_geo.to_json()
+            geo_j = flm.GeoJson(data=geo_j,
+                                style_function=lambda x: {'fillColor': 'green', 'fillOpacity': 0.8})
+            fg3.add_child(geo_j)
+            map.add_child(fg3)
+        
         fg = flm.FeatureGroup(name='Philippines Map')
 
         marker_props = {'Low': {'color': 'green', 'size': 10},
@@ -239,42 +269,6 @@ def main():
             marker = flm.CircleMarker(location = [lt, ln], popup = popup, fill_color=props['color'], color='None', radius=props['size'], fill_opacity = 0.5)
             fg.add_child(marker)
             map.add_child(fg)
-
-        fg1 = flm.FeatureGroup(name='Storm Surge 3')
-
-        for _, r in df_list[0][df_list[0]['province'] == prov].iterrows():
-            # Without simplifying the representation of each borough,
-            # the map might not be displayed
-            sim_geo = gpd.GeoSeries(r['geometry'])
-            geo_j = sim_geo.to_json()
-            geo_j = flm.GeoJson(data=geo_j,
-                                style_function=lambda x: {'fillColor': 'red', 'fillOpacity': 0.8})
-            fg1.add_child(geo_j)
-            map.add_child(fg1)
-
-        fg2 = flm.FeatureGroup(name='Storm Surge 2')
-
-        for _, r in df_list[1][df_list[1]['province'] == prov].iterrows():
-            # Without simplifying the representation of each borough,
-            # the map might not be displayed
-            sim_geo = gpd.GeoSeries(r['geometry'])
-            geo_j = sim_geo.to_json()
-            geo_j = flm.GeoJson(data=geo_j,
-                                style_function=lambda x: {'fillColor': 'blue', 'fillOpacity': 0.8})
-            fg2.add_child(geo_j)
-            map.add_child(fg2)
-
-        fg3 = flm.FeatureGroup(name='Storm Surge 1')
-
-        for _, r in df_list[2][df_list[2]['province'] == prov].iterrows():
-            # Without simplifying the representation of each borough,
-            # the map might not be displayed
-            sim_geo = gpd.GeoSeries(r['geometry'])
-            geo_j = sim_geo.to_json()
-            geo_j = flm.GeoJson(data=geo_j,
-                                style_function=lambda x: {'fillColor': 'green', 'fillOpacity': 0.8})
-            fg3.add_child(geo_j)
-            map.add_child(fg3)
 
         flm.LayerControl(collapsed=False).add_to(map)
 

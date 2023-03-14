@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import seaborn as sns
 import io
 from PIL import Image
@@ -10,24 +13,11 @@ st.set_page_config(page_title='EDA', layout='wide')
 
 
 # Load the DATA and cache.
-@st.cache_data
-def get_data(url):
-    df = pd.read_csv(url)
-    return df
-
-
-@st.cache_data
-def nfh():
-    df1_num = df1.select_dtypes(include=['float64', 'int64'])
-    df = pd.DataFrame(df1_num)
-    fig, ax = plt.subplots(figsize=(16, 20))
-    ax = df.hist(bins=50, ax=ax)
-    plt.show()
-    st.pyplot(fig)
-
-
-url = 'src/tasks/task-5-web-app-deployment/data/all_data.csv'
-df1 = get_data(url)
+df_dweg = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/dweg.csv')
+df_disaster = pd.read_csv('src/tasks/task-5-web-app-deployment/data\model/disaster.csv')
+df_industry = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/industry_II.csv')
+df_health = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/health.csv')
+df_poverty = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/poverty.csv')
 
 
 def main():
@@ -117,6 +107,7 @@ def main():
     )
 
     col1, col2, col3 = st.columns((1, 1, 1))
+    
     with col1:
         image2 = Image.open('src/tasks/task-5-web-app-deployment/assets/Omdena.png')
         st.image(image2)
@@ -129,95 +120,170 @@ def main():
         st.image(image1)
 
     st.title(APP_TITLE)
+    st.write("For the Omdena Philippines Chapter - Vulnerability Analysis, we collected data from two main sources, Department of Trade and Industry (DTI) and the Philippine Statistics Authority (PSA).The final data was then segregated into following 5 pillars.",unsafe_allow_html=True)
+    st.write("- Economy", unsafe_allow_html=True)
+    st.write("- Disaster", unsafe_allow_html=True)
+    st.markdown("- Industry", unsafe_allow_html=True)
+    st.markdown("- Health", unsafe_allow_html=True)
+    st.markdown("- Poverty", unsafe_allow_html=True)
+    st.write("Each of the above pillars are then assigned with features taken from the collected dataset.This assignment is on the basis of United Nations Sustainable Development Goals and meta data information from DTI and PSA websites.", unsafe_allow_html=True)
+    st.write("Let's have closer look on the data.")
 
-    st.markdown('#### df1.head(10)')
-    st.dataframe(df1.head(10))
-    st.markdown('#### df1.describe()')
-    st.dataframe(df1.describe())
 
-    col1, col2, col3 = st.columns(3)
+# Boxplot Section
+    st.markdown('#### Pillar wise data distribution of features')
+    st.write("Here you can see the boxplots and outlier analysis for each of the feature under the respective pillars")
+    col1,col2= st.columns(2)
     with col1:
-        st.markdown("#### st.pyplot(fig1) - Vulnerability Economy")
-        labels = 'High', 'Medium', 'Low'
-        sizes = [472, 1024, 136]
-        explode = (0.1, 0, 0)
+        st.markdown('###### Economy')    
+        features = df_dweg.columns.to_list()[1:6]
+        fig = make_subplots(rows=1,cols=5)
+        for i, feature in enumerate(features):
+            fig.add_trace(go.Box(y=df_dweg[feature],name=feature),row=1,col=i+1,)
+        fig.update_layout(width=1300,height=500,showlegend=False,hovermode=False)
+        col1.write(fig)
 
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-                shadow=True, startangle=90)
-        ax1.axis('equal')
-        st.pyplot(fig1)
+    col1,col2= st.columns(2)
+    with col1:
+        st.markdown('###### Disaster')    
+        features = df_disaster.columns.to_list()[1:6]
+        fig = make_subplots(rows=1,cols=5)
+        for i, feature in enumerate(features):
+            fig.add_trace(go.Box(y=df_disaster[feature],name=feature),row=1,col=i+1)
+        fig.update_layout(width=1300,height=500,showlegend=False,hovermode=False)
+        col1.write(fig)
+
+    col1,col2= st.columns(2)
+    with col1:
+        st.markdown('###### Industry')    
+        features = df_industry.columns.to_list()[1:6]
+        fig = make_subplots(rows=1,cols=5)
+        for i, feature in enumerate(features):
+            fig.add_trace(go.Box(y=df_industry[feature],name=feature),row=1,col=i+1)
+        fig.update_layout(width=1300,height=500,showlegend=False,hovermode=False)
+        col1.write(fig)
+
+    
+    col1,col2= st.columns(2)
+    with col1:
+        st.markdown('###### Health')    
+        features = df_health.columns.to_list()[1:6]
+        fig = make_subplots(rows=1,cols=5)
+        for i, feature in enumerate(features):
+            fig.add_trace(go.Box(y=df_health[feature],name=feature),row=1,col=i+1)
+        fig.update_layout(width=1300,height=500,showlegend=False,hovermode=False)
+        col1.write(fig)
+
+    col1,col2= st.columns(2)
+    with col1:
+        st.markdown('###### Poverty')    
+        features = df_poverty.columns.to_list()[1:6]
+        fig = make_subplots(rows=1,cols=5)
+        for i, feature in enumerate(features):
+            fig.add_trace(go.Box(y=df_poverty[feature],name=feature),row=1,col=i+1)
+        fig.update_layout(width=1300,height=500,showlegend=False,hovermode=False)
+        col1.write(fig)
+    
+    st.markdown("As the main task of this project, muncipalities of Philippines are gauged on the aforementioned 5 pillars. To achieve this we used Clustering Machine Learning Algorithm and divided the municipalities in to 3 categories of vulnerabilities.")
+    st.markdown("Low, Medium and High. Let's deep dive into the cluster analysis.")
+
+
+# Pie Chart Section
+    eco_plot= pd.DataFrame(df_dweg['Vulnerability'].value_counts())
+    dis_plot= pd.DataFrame(df_disaster['Vulnerability'].value_counts())
+    ind_plot= pd.DataFrame(df_industry ['Vulnerability'].value_counts())
+    health_plot= pd.DataFrame(df_health['Vulnerability'].value_counts())
+    poverty_plot= pd.DataFrame(df_poverty['Vulnerability'].value_counts())
+
+    st.markdown('#### Cluster Profiles')
+    st.markdown("Here are some Pie Charts showing the pillar wise vulnerability distribution as a Percentage of number of municipalities.")
+    col1, col2,col3= st.columns(3)
+    with col1:
+        st.markdown("###### Economy")
+        fig= px.pie(eco_plot,names=eco_plot.index, values=eco_plot.Vulnerability)
+        fig.update_layout(width=550,height=450)
+        col1.write(fig)
+    with col2:
+        st.markdown("###### Disaster")
+        fig= px.pie(dis_plot,names=dis_plot.index, values=dis_plot.Vulnerability)
+        fig.update_layout(width=550,height=450)
+        col2.write(fig)
+    with col3:
+        st.markdown("###### Industry")
+        fig= px.pie(ind_plot,names=ind_plot.index, values=ind_plot.Vulnerability)
+        fig.update_layout(width=550,height=450)
+        col3.write(fig)      
+
+    col1,col2,col3 = st.columns(3)
+    with col1:
+        st.markdown("###### Health")
+        fig= px.pie(health_plot,names=health_plot.index, values=health_plot.Vulnerability)
+        fig.update_layout(width=550,height=450)
+        col1.write(fig)   
+    with col2:
+        st.markdown("###### Poverty")
+        fig= px.pie(poverty_plot,names=poverty_plot.index, values=poverty_plot.Vulnerability)
+        fig.update_layout(width=550,height=450)
+        col2.write(fig)
+    with col3:
+        col3.write("")
+
+
+#Barplot Section
+    st.markdown("#### Feature and Cluster Analysis")
+    st.markdown("Here are some bar plots showing mean of feature indices wise group by vulnerabilities.")
+    eco_plot= pd
+    col1, col2,col3= st.columns(3)
+    with col1:
+        st.markdown("###### Economy")
+        feature_option = df_dweg.drop(['Cluster_Id','Vulnerability'],axis=1).columns.to_list()
+        feature = st.selectbox('Feature Selection',feature_option[1:])
+        eco_bar = pd.DataFrame(df_dweg[feature].groupby(df_dweg['Vulnerability']).mean())
+        fig = px.bar (eco_bar,y=eco_bar.index,x=feature,color=eco_bar.index,color_discrete_sequence=['red','lightblue','blue'])
+        fig.update_layout(width=550,height=450)
+        st.write(fig)
 
     with col2:
-        st.markdown("#### st.pyplot(fig1) - Vulnerability Disaster")
-        labels = 'High', 'Medium', 'Low'
-        sizes = [142, 1349, 141]
-        explode = (0.1, 0, 0)
-
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-                shadow=True, startangle=90)
-        ax1.axis('equal')
-        st.pyplot(fig1)
+        st.markdown("###### Disaster")
+        feature_option = df_disaster.drop(['Cluster_Id','Vulnerability'],axis=1).columns.to_list()
+        feature = st.selectbox('Feature Selection',feature_option[1:])
+        dis_bar = pd.DataFrame(df_disaster[feature].groupby(df_disaster['Vulnerability']).mean())
+        fig = px.bar (dis_bar,y=dis_bar.index,x=feature,color=dis_bar.index,color_discrete_sequence=['red','lightblue','blue'])
+        fig.update_layout(width=550,height=450)
+        st.write(fig)
 
     with col3:
-        st.markdown("#### st.pyplot(fig1) - Vulnerability Industry")
-        labels = 'High', 'Medium', 'Low'
-        sizes = [154, 543, 935]
-        explode = (0.1, 0, 0)
+        st.markdown("###### Industry")
+        feature_option = df_industry.drop(['Cluster_Id','Vulnerability'],axis=1).columns.to_list()
+        feature = st.selectbox('Feature Selection',feature_option[1:])
+        ind_bar = pd.DataFrame(df_industry[feature].groupby(df_industry['Vulnerability']).mean())
+        fig = px.bar (ind_bar,y=ind_bar.index,x=feature,color=ind_bar.index,color_discrete_sequence=['red','lightblue','blue'])
+        fig.update_layout(width=550,height=450)
+        st.write(fig)
 
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-                shadow=True, startangle=90)
-        ax1.axis('equal')
-        st.pyplot(fig1)
-
-    col1, col2, col3 = st.columns(3)
+    col1,col2,col3 = st.columns(3)
     with col1:
-        st.markdown("#### st.pyplot(fig1) - Vulnerability Health")
-        labels = 'High', 'Medium', 'Low'
-        sizes = [567, 897, 168]
-        explode = (0.1, 0, 0)
-
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-                shadow=True, startangle=90)
-        ax1.axis('equal')
-        st.pyplot(fig1)
+        st.markdown("###### Health")
+        feature_option = df_health.drop(['Cluster_Id','Vulnerability'],axis=1).columns.to_list()
+        feature = st.selectbox('Feature Selection',feature_option[1:])
+        health_bar = pd.DataFrame(df_health[feature].groupby(df_health['Vulnerability']).mean())
+        fig = px.bar (health_bar,y=health_bar.index,x=feature,color=health_bar.index,color_discrete_sequence=['red','lightblue','blue'])
+        fig.update_layout(width=550,height=450)
+        col1.write(fig)
 
     with col2:
-        st.markdown("#### st.pyplot(fig1) - Vulnerability Poverty")
-        labels = 'High', 'Medium', 'Low'
-        sizes = [247, 813, 572]
-        explode = (0.1, 0, 0)
-
-        fig1, ax1 = plt.subplots()
-        ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-                shadow=True, startangle=90)
-        ax1.axis('equal')
-        st.pyplot(fig1)
+        st.markdown("###### Poverty")
+        feature_option = df_poverty.drop(['Cluster_Id','Vulnerability'],axis=1).columns.to_list()
+        feature = st.selectbox('Feature Selection',feature_option[1:])
+        pov_bar = pd.DataFrame(df_poverty[feature].groupby(df_poverty['Vulnerability']).mean())
+        fig = px.bar (pov_bar,y=pov_bar.index,x=feature,color=pov_bar.index,color_discrete_sequence=['red','lightblue','blue'])
+        fig.update_layout(width=550,height=450)
+        col2.write(fig)
 
     with col3:
-        st.write('')
+        st.markdown("")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### sns.distplot(df1['pov_inc']")
-        fig = plt.figure(figsize=(10, 10))
-        sns.distplot(df1['pov_inc'], color='#4abd82', bins=100, hist_kws={'alpha': 0.4})
-        st.pyplot(fig)
 
-    with col2:
-        st.markdown("#### df1['pov_inc'].describe()")
-        st.dataframe(df1['pov_inc'].describe())
-        st.markdown("#### df1.select_dtypes(include=['float64', 'int64'])")
-        df1_num = df1.select_dtypes(include=['float64', 'int64'])
-        st.dataframe(df1_num.head(5))
-        df1.fillna(0, inplace=True)
-
-    st.markdown("#### st.pyplot(fig) - Numeric Features Histograms")
-
-    nfh()
 
 if __name__ == "__main__":
     main()

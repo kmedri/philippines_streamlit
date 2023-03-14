@@ -145,7 +145,7 @@ def main():
     df_industry = data['industry_II']
     df_poverty = data['poverty']
 
-    # Create the divs and add Model
+    # Create columns
     col1, col2 = st.columns(2)
     with col1:
         st.subheader('Cluster Prediction')
@@ -156,13 +156,17 @@ def main():
             'src/tasks/task-5-web-app-deployment/pckls/industry_II.pkl',
             'src/tasks/task-5-web-app-deployment/pckls/poverty.pkl')
 
+        # Create a dictionary of models
         models = {'Disaster': Disaster, 'Economy': Economy,
         'Health': Health, 'Industry': Industry, 'Poverty': Poverty}
 
+        # Create a list of model names
         model_names = models.keys()
 
+        # Set default option
         option = 'Disaster'
 
+        # Create a drop down menu
         with open(models[option], 'rb') as file:
             kmeans = pkl.load(file)
 
@@ -232,6 +236,7 @@ def main():
                 sliders[col] = st.slider(f'''**{col}**''', min_value = float(min_val), max_value = float(max_val), value = float(val))
             return sliders
 
+        # Create a nested column for the city selection and the model selection.
         subcol1, subcol2 = col1.columns(2)
         subcol1.subheader('City Selection')
         # Add a dropdown to select the city.
@@ -302,7 +307,7 @@ def main():
                         file_name="dti-index-data-dict.pdf",
                         mime="application/pdf"
                     )
-            # st.markdown("Download the PDF file containing the full DTI Metadata", st.download_button('Download file', 'src/tasks/task-5-web-app-deployment/assets/dti-index-data-dict.pdf'))
+
 
 if __name__ == "__main__":
     main()
