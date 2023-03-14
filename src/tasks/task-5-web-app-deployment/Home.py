@@ -14,10 +14,13 @@ st.set_page_config(page_title='Home', layout='wide')
 @st.cache_data
 def get_data(folder):
     """
-    Load the data in a function so we can cache the files.
+    Loads the data via a function so we can cache the files.
+
+    Args:
+        folder (str): url to the folder containing the data.
 
     Returns:
-        pd.Dataframe: Returns a data frame.
+        dict: Returns a dictionary of data frames. File name is the key. Data frame is the values.
     """
     data_folder = folder
     files = [f for f in os.listdir(data_folder) if f.endswith('.csv')]
@@ -32,31 +35,40 @@ def get_data(folder):
 # Load the Map DATA and cache
 @st.cache_data
 def get_map_data(url):
-    # gdf = gpd.read_parquet(url)
     df1 = pd.read_csv(url)
-    # df1 = pd.DataFrame(df1.iloc[:, :-1])  # remove last column
     df1 = pd.DataFrame(df1)
     return df1
 
 
 # Load the Noah DATA and cache
-# @st.cache_data
-# def get_data_noah(folder):
-#     """
-#     Load the data in a function so we can cache the files.
+@st.cache_data
+def get_data_noah(folder, name):
+    """
+    Reads all files inside a directory and creates a dataframe for each file.
+    The dataframe names are created from the df parameter plus an incremental number n.
 
-#     Returns:
-#         pd.Dataframe: Returns a data frame.
-#     """
-#     data_folder = folder
-#     files = [f for f in os.listdir(data_folder) if f.endswith('.parquet')]
-#     gdfs = {}
-#     for file in files:
-#         gdf_name = os.path.splitext(file)[0]
-#         gdf = gpd.read_parquet(os.path.join(data_folder, file))
-#         gdfs[gdf_name] = gdf.set_index(gdf.columns[0])
-#     return gdfs
+    Args:
+        folder (str): Path to the directory containing the files.
+        name (str): Base name for the dataframes.
+
+    Returns:
+        list: A list of dataframes.
+    """
+    # Get all files inside the directory
+    files = [file for file in os.listdir(folder) if os.path.isfile(os.path.join(folder, file))]
     
+    # Create a list to store the dataframes
+    dataframes = []
+    
+    # Loop through each file and create a dataframe for it
+    for i, file in enumerate(files):
+        file_path = os.path.join(folder, file)
+        df_name = f'{name}_{i}'
+        df = gpd.read_parquet(file_path)
+        dataframes.append(df)
+    
+    return dataframes
+
 
 # Create the landing page
 def main():
@@ -164,16 +176,12 @@ def main():
 
     st.title(APP_TITLE)
 
-    # Load data and create data frames for the Model
-    # data = get_data('src/tasks/task-5-web-app-deployment/data/model')
-    # df_disaster = data['disaster']
-    # df_dweg = data['dweg']
-    # df_health = data['health']
-    # df_industry = data['industry_II']
-    # df_poverty = data['poverty']
-
     map_url = 'src/tasks/task-5-web-app-deployment/data/all_data.csv'
     df1 = get_map_data(map_url)
+
+    url2 = 'src/tasks/task-5-web-app-deployment/data/noah'
+    name = 'storm_surge'
+    df_list = get_data_noah(url2, name)
 
     # Add map.
     def map_ph(data, name, prov):
@@ -214,7 +222,7 @@ def main():
         '''
 
         if lat and lon:
-            map = flm.Map(location=[lat[0], lon[0]], zoom_start=8, scrollWheelZoom=False)
+            map = flm.Map(location=[lat[0], lon[0]], zoom_start=10, scrollWheelZoom=False)
         else:
             return None
 
@@ -232,15 +240,51 @@ def main():
             fg.add_child(marker)
             map.add_child(fg)
 
+        fg1 = flm.FeatureGroup(name='Storm Surge 3')
+
+        for _, r in df_list[0][df_list[0]['province'] == prov].iterrows():
+            # Without simplifying the representation of each borough,
+            # the map might not be displayed
+            sim_geo = gpd.GeoSeries(r['geometry'])
+            geo_j = sim_geo.to_json()
+            geo_j = flm.GeoJson(data=geo_j,
+                                style_function=lambda x: {'fillColor': 'red', 'fillOpacity': 0.8})
+            fg1.add_child(geo_j)
+            map.add_child(fg1)
+
+        fg2 = flm.FeatureGroup(name='Storm Surge 2')
+
+        for _, r in df_list[1][df_list[1]['province'] == prov].iterrows():
+            # Without simplifying the representation of each borough,
+            # the map might not be displayed
+            sim_geo = gpd.GeoSeries(r['geometry'])
+            geo_j = sim_geo.to_json()
+            geo_j = flm.GeoJson(data=geo_j,
+                                style_function=lambda x: {'fillColor': 'blue', 'fillOpacity': 0.8})
+            fg2.add_child(geo_j)
+            map.add_child(fg2)
+
+        fg3 = flm.FeatureGroup(name='Storm Surge 1')
+
+        for _, r in df_list[2][df_list[2]['province'] == prov].iterrows():
+            # Without simplifying the representation of each borough,
+            # the map might not be displayed
+            sim_geo = gpd.GeoSeries(r['geometry'])
+            geo_j = sim_geo.to_json()
+            geo_j = flm.GeoJson(data=geo_j,
+                                style_function=lambda x: {'fillColor': 'green', 'fillOpacity': 0.8})
+            fg3.add_child(geo_j)
+            map.add_child(fg3)
+
+        flm.LayerControl(collapsed=False).add_to(map)
+
         # map.save('map1.html')
-        st_map = st_folium(map, width=1600)
-        return st_map
+        st_map_ph = st_folium(map, width=1600)
+        return st_map_ph
 
     st.write("This map sponsored by Omdena and United Nations (Habitat) provides information regarding vulnerable areas in the Philippines. It shows previous data around 3 indexes: Poverty, Health and Climate Disaster vulnerability and aims to aid NGOs, government officials and citizens in better understanding the Philippines and its most vulnerable areas. The tool also projects to the future by predicting areas at most risk with the goal of providing entities with an effective tool that would help them appropriately distribute resources and aid. ")
     
     df1 = df1.assign(Country='Philippines')
-    # st.dataframe(df1)
-    # st.dataframe(df_disaster)
 
     # Set columns
     col1, col2 = st.columns(2)
@@ -285,6 +329,15 @@ def main():
         tot_pop = df1['total_population'].sum()
         pop_growth = int(df1['total_population'].sum()) - 102897634
         st.metric('Total Population', tot_pop, f'{pop_growth} from last year')
+
+    st.subheader('Geospatial layers - Storm Surge')
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image('src/tasks/task-5-web-app-deployment/assets/layered_map.png')
+
+    with col2:
+        st.text('')
 
 if __name__ == "__main__":
     main()
