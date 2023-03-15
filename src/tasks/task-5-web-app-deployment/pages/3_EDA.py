@@ -14,7 +14,7 @@ st.set_page_config(page_title='EDA', layout='wide')
 
 # Load the DATA and cache.
 df_dweg = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/dweg.csv')
-df_disaster = pd.read_csv('src/tasks/task-5-web-app-deployment/data\model/disaster.csv')
+df_disaster = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/disaster.csv')
 df_industry = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/industry_II.csv')
 df_health = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/health.csv')
 df_poverty = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/poverty.csv')
