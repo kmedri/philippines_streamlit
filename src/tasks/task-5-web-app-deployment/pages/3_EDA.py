@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
@@ -13,11 +14,33 @@ st.set_page_config(page_title='EDA', layout='wide')
 
 
 # Load the DATA and cache.
-df_dweg = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/dweg.csv')
-df_disaster = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/disaster.csv')
-df_industry = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/industry_II.csv')
-df_health = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/health.csv')
-df_poverty = pd.read_csv('src/tasks/task-5-web-app-deployment/data/model/poverty.csv')
+@st.cache_data
+def get_data(folder):
+    """
+    Loads the data via a function so we can cache the files.
+
+    Args:
+        folder (str): url to the folder containing the data.
+
+    Returns:
+        dict: Returns a dictionary of data frames. File name is the key. Data frame is the values.
+    """
+    data_folder = folder
+    files = [f for f in os.listdir(data_folder) if f.endswith('.csv')]
+    dfs = {}
+    for file in files:
+        df_name = os.path.splitext(file)[0]
+        df = pd.read_csv(os.path.join(data_folder, file))
+        dfs[df_name] = df.set_index(df.columns[0])
+    return dfs
+
+dfs = get_data('src/tasks/task-5-web-app-deployment/data/model')
+
+df_dweg = pd.DataFrame(dfs['dweg'])
+df_disaster = pd.DataFrame(dfs['disaster'])
+df_industry = pd.DataFrame(dfs['industry_II'])
+df_health = pd.DataFrame(dfs['health'])
+df_poverty = pd.DataFrame(dfs['poverty'])
 
 
 def main():
@@ -120,13 +143,13 @@ def main():
         st.image(image1)
 
     st.title(APP_TITLE)
-    st.write("For the Omdena Philippines Chapter - Vulnerability Analysis, we collected data from two main sources, Department of Trade and Industry (DTI) and the Philippine Statistics Authority (PSA).The final data was then segregated into following 5 pillars.",unsafe_allow_html=True)
-    st.write("- Economy", unsafe_allow_html=True)
-    st.write("- Disaster", unsafe_allow_html=True)
-    st.markdown("- Industry", unsafe_allow_html=True)
-    st.markdown("- Health", unsafe_allow_html=True)
-    st.markdown("- Poverty", unsafe_allow_html=True)
-    st.write("Each of the above pillars are then assigned with features taken from the collected dataset.This assignment is on the basis of United Nations Sustainable Development Goals and meta data information from DTI and PSA websites.", unsafe_allow_html=True)
+    st.write("For the Omdena Philippines Chapter - Vulnerability Analysis, we collected data from two main sources, Department of Trade and Industry (DTI) and the Philippine Statistics Authority (PSA).The final data was then segregated into following 5 pillars.")
+    st.write("- Economy")
+    st.write("- Disaster")
+    st.write("- Industry")
+    st.write("- Health")
+    st.write("- Poverty")
+    st.write("Each of the above pillars are then assigned with features taken from the collected dataset.This assignment is on the basis of United Nations Sustainable Development Goals and meta data information from DTI and PSA websites.")
     st.write("Let's have closer look on the data.")
 
 

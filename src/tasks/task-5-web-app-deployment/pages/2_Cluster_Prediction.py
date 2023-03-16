@@ -148,7 +148,7 @@ def main():
     # Create columns
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader('Cluster Prediction')
+        st.subheader('Cluster Predicted Outcome')
         Disaster, Economy, Health, Industry, Poverty = (
             'src/tasks/task-5-web-app-deployment/pckls/disaster.pkl',
             'src/tasks/task-5-web-app-deployment/pckls/dweg.pkl',
@@ -258,8 +258,11 @@ def main():
         # Display the slider widgets.
         sliders = display_sliders()
 
+        st.subheader('Cluster Prediction')
+        st.markdown('''<p class="predict">The slider values above can be moved to change the values in the pillars and used to re-predict the cluster group for the selected city by clicking <b>ReCalculate</b> below.</p>''', unsafe_allow_html=True)
+
         # Add a button to recalculate the cluster group.
-        if st.button('Recalculate'):
+        if st.button('ReCalculate'):
             x = pd.DataFrame(sliders, index=[selected_city])
             new_cluster = kmeans.predict(x)[0]
             map_dict = {
@@ -283,6 +286,7 @@ def main():
             <p class="res">New Level of Vulnerability: {new_value}</p>
             '''
             st.markdown(result, unsafe_allow_html=True)
+
     with col2:
             st.markdown("We collected data from two main sources, Department of Trade and Industry (DTi) and the Philippine Statistics Authority (PSA).", unsafe_allow_html=True)
             st.markdown("The DTi data was used to create the 3 indexes: Poverty, Health and Disaster.", unsafe_allow_html=True)
