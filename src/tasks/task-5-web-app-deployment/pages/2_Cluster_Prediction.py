@@ -251,20 +251,18 @@ def main():
             'Please Select the Pillar', options=model_names,
             help='Here are 5 pillars that can influence the vulnerability of a City')
 
-        # Display the current cluster group for the selected city.
+        # Display the current cluster group for the selected city in an info panel.
         cluster = get_cluster(selected_city)
-        result = f'''
-        <p class="res">Level of Vulnerability: {cluster}</p>
-        '''
-        st.markdown(result, unsafe_allow_html=True)
-        st.info(f'Level of Vulnerability: **{cluster}**', icon="🚨")
+        
+        st.info(f'Level of Vulnerability: **{cluster}**', icon='ℹ️')
+        
         # Display the slider widgets.
         sliders = display_sliders()
 
         st.subheader('Cluster Prediction')
         st.markdown('''<p class="predict">The slider values above can be moved to change the values in the pillars and used to re-predict the cluster group for the selected city by clicking <b>ReCalculate</b> below.</p>''', unsafe_allow_html=True)
 
-        # Add a button to recalculate the cluster group.
+        # Add a button to recalculate the cluster group and display in an info panel.
         if st.button('ReCalculate', use_container_width=True):
             x = pd.DataFrame(sliders, index=[selected_city])
             new_cluster = kmeans.predict(x)[0]
@@ -285,10 +283,8 @@ def main():
                 ('Economy', 0): 'Medium',
                 ('Economy', 1): 'High'}
             new_value = map_dict.get((option, new_cluster), None)
-            result = f'''
-            <p class="res">New Level of Vulnerability: {new_value}</p>
-            '''
-            st.markdown(result, unsafe_allow_html=True)
+
+            st.info(f'Level of Vulnerability: **{new_value}**', icon='ℹ️')
 
     with col2:
             st.markdown('The clustering model can help in mapping vulnerabilities of different municipalities in Philippines into different clusters on the basis of different pillars:') 
