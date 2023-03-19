@@ -257,7 +257,7 @@ def main():
         <p class="res">Level of Vulnerability: {cluster}</p>
         '''
         st.markdown(result, unsafe_allow_html=True)
-        st.info(f'Level of Vulnerability: {cluster}', icon="ℹ️")
+        st.info(f'Level of Vulnerability: **{cluster}**', icon="ℹ️")
         # Display the slider widgets.
         sliders = display_sliders()
 
