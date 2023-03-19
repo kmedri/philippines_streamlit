@@ -246,7 +246,7 @@ def main():
         flm.LayerControl(collapsed=False).add_to(map)
 
         # map.save('map1.html')
-        st_map_ph = st_folium(map, width=1600)
+        st_map_ph = st_folium(map, width=1600, returned_objects=['last_object_clicked'])
         return st_map_ph
 
     st.write("This map sponsored by Omdena and United Nations (Habitat) provides information regarding vulnerable areas in the Philippines.")
