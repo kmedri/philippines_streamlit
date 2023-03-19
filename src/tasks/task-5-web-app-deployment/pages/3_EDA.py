@@ -125,6 +125,9 @@ def main():
         font-size: 1rem;
         font-weight: bold;
         }
+        button.css-fxzapv.edgvbvh10 {
+        background-color: #daf2bf;
+        }
         </style>
         """, unsafe_allow_html=True
     )

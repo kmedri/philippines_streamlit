@@ -99,7 +99,7 @@ def main():
         p.res {
         font-size: 1.2rem;
         font-weight: bold;
-        background-color: #fff;
+        background-color: #daf2bf;
         padding: 5px;
         border: 1px tomato solid;
         }
@@ -118,6 +118,9 @@ def main():
         word-break: break-word;
         font-size: 1rem;
         font-weight: bold;
+        }
+        button.css-fxzapv.edgvbvh10 {
+        background-color: #daf2bf;
         }
         </style>
         """, unsafe_allow_html=True
