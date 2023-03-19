@@ -262,7 +262,7 @@ def main():
         st.markdown('''<p class="predict">The slider values above can be moved to change the values in the pillars and used to re-predict the cluster group for the selected city by clicking <b>ReCalculate</b> below.</p>''', unsafe_allow_html=True)
 
         # Add a button to recalculate the cluster group.
-        if st.button('ReCalculate'):
+        if st.button('ReCalculate', use_container_width=True):
             x = pd.DataFrame(sliders, index=[selected_city])
             new_cluster = kmeans.predict(x)[0]
             map_dict = {
@@ -289,11 +289,11 @@ def main():
 
     with col2:
             st.markdown('The clustering model can help in mapping vulnerabilities of different municipalities in Philippines into different clusters on the basis of different pillars:') 
-            st.markdown('- Decent work and Economic growth') 
+            st.markdown('- Economy') 
             st.markdown('- Disaster') 
             st.markdown('- Industry')
-            st.markdown('- Innovation')
-            st.markdown('- Infrastructure, Healthcare and Poverty')
+            st.markdown('- Health')
+            st.markdown('- Poverty')
             st.markdown('This application can help us in identifying the improvements required in different areas(features) to move a particular municipality from high vulnerability cluster to low vulnerability cluster.')
             st.markdown("We collected data from two main sources, Department of Trade and Industry (DTi) and the Philippine Statistics Authority (PSA).")
             st.markdown("The DTi data was used to create the 5 indexes: Decent work and Economic growth, Disaster, Industry, Innovation and Infrastructure, Healthcare and Poverty.")
@@ -306,7 +306,8 @@ def main():
                         label="Download Pdf",
                         data=file,
                         file_name="dti-index-data-dict.pdf",
-                        mime="application/pdf"
+                        mime="application/pdf",
+                        use_container_width=True
                     )
 
 

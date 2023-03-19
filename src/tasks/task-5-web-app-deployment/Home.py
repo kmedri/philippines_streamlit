@@ -247,7 +247,7 @@ def main():
         return st_map_ph
 
     st.write("This map sponsored by Omdena and United Nations (Habitat) provides information regarding vulnerable areas in the Philippines.")
-    st.write("It shows data around 5 indexes: Decent work and Economic growth, Disaster, Industry and Innovation aims to aid NGOs, government officials and citizens in better understanding the Philippines and its most vulnerable areas.")
+    st.write("It shows data around 5 indexes: Economy, Disaster, Industry, Health and Poverty. Its aim is to aid NGOs, government officials and citizens in better understanding the Philippines and its most vulnerable areas.")
     st.write("The tool also projects to the future by predicting areas at most risk with the goal of providing entities with an effective tool that would help them appropriately distribute resources and aid.")
     
     df1 = df1.assign(Country='Philippines')
