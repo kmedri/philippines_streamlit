@@ -253,10 +253,7 @@ def main():
 
         # Display the current cluster group for the selected city.
         cluster = get_cluster(selected_city)
-        result = f'''
-        <p class="res">Level of Vulnerability: {cluster}</p>
-        '''
-        st.markdown(result, unsafe_allow_html=True)
+        st.info('Level of Vulnerability:', cluster, icon='i')
 
         # Display the slider widgets.
         sliders = display_sliders()
