@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import geopandas as gpd
 import os
-# import pickle as pkl
 import folium as flm
 from streamlit_folium import st_folium
 from PIL import Image
